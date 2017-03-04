@@ -2,10 +2,10 @@ import java.util.List;
 
 class Parser {
 
-    static final String nullOp = "%";
-    static final String inSep = ":";
-    static final String outSep = "|";
-    static final String kv = "=";
+    final static String nullOp = "%";
+    final static String inSep = ":";
+    final static String outSep = "|";
+    final static String kv = "=";
 
     static String ParseSelectedPeers(List<String[]> peers) {
 
