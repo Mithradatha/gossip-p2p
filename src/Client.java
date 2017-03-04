@@ -26,15 +26,7 @@ public class Client {
 
             while ((stdIn = sc.nextLine()) != null) {
                 out.println(stdIn);
-                while (!(output = in.readLine()).equals("%")) {
-                    System.out.println(output);
-                    if (output.toLowerCase().equals("goodbye!")) {
-                        break;
-                    }
-                }
-                if (stdIn.toLowerCase().equals("exit")) {
-                    break;
-                }
+                System.out.println(in.readLine());
             }
         } catch (IOException exp) {
             System.out.println(exp.getMessage());
