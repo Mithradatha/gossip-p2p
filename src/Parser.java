@@ -1,11 +1,22 @@
+import java.sql.SQLException;
 import java.util.List;
 
 class Parser {
 
     final static String nullOp = "%";
     final static String inSep = ":";
-    final static String outSep = "|";
     final static String kv = "=";
+
+    final static String GREETINGS = "HELLO";
+    final static String SERVER = "server";
+    final static String CLIENT = "client";
+
+    final static String UDP = "udp";
+    final static String TCP = "tcp";
+
+    private final static String RES_UNKNOWN = "BAD UNKNOWN COMMAND";
+    private final static String RES_INVALID = "BAD INVALID FORMAT";
+    private final static String RES_SUCCESS = "GOOD";
 
     static String ParseSelectedPeers(List<String[]> peers) {
         StringBuilder peerResponse = new StringBuilder();
@@ -21,49 +32,57 @@ class Parser {
         return peerResponse.toString();
     }
 
-    static String parseAndExecuteCommand(String request, DataBaseHandler db) {
-        try {
-            String[] input = request.split(Parser.inSep);
-            String command = input[0];
-            System.out.println(command);
-            String output;
-            switch (command) {
-                case "GOSSIP": {
-                    String sha = input[1];
-                    String dt = input[2];
-                    String message = input[3].substring(0, input[3].indexOf(Parser.nullOp));
-                    if (db.exists(sha)) {
-                        output = "DISCARDED";
-                    } else {
-                        System.out.println(sha);
-                        System.out.println(dt);
-                        System.out.println(message);
-                        db.insertGossip(sha, dt, message);
-                        output = "Inserted";
-                    }
-                    break;
+    static String ParseAndExecuteCommand(String request, DataBaseHandler db) throws SQLException {
+
+        String[] input = request.split(Parser.inSep);
+        String command = input[0];
+
+        String output = "";
+
+        switch (command) {
+            case "GOSSIP": {
+                if (input.length != 4) {
+                    return RES_INVALID;
                 }
-                case "PEER": {
-                    String name = input[1];
-                    String port = input[2].split(Parser.kv)[1];
-                    String ip = input[3].substring(0, input[3].indexOf(Parser.nullOp)).split(Parser.kv)[1];
-                    db.insertPeer(name, port, ip);
-                    output = "Inserted";
-                    break;
+
+                String sha = input[1];
+                String dt = input[2];
+                String message = input[3].substring(0, input[3].indexOf(Parser.nullOp));
+
+                if (db.exists(sha)) {
+                    output = "DISCARDED";
+                } else {
+                    db.insertGossip(sha, dt, message);
+                    output = RES_SUCCESS;
+                    //db.broadcastGossip(sha, dt, message);
                 }
-                case "PEERS?": {
-                    String peerResponse = Parser.ParseSelectedPeers(db.selectPeers());
-                    output = peerResponse;
-                    break;
-                }
-                default:
-                    output = "Unknown Command: " + command;
-                    break;
+                break;
             }
-            return output;
-        } catch (java.sql.SQLException e) {
-            System.out.println(e.getMessage());
-            return "Database Error";
+            case "PEER": {
+                if (input.length != 4) {
+                    return RES_INVALID;
+                }
+
+                String name = input[1];
+                String port = input[2].split(Parser.kv)[1];
+                String ip = input[3].substring(0, input[3].indexOf(Parser.nullOp)).split(Parser.kv)[1];
+
+                db.insertPeer(name, port, ip);
+                output = RES_SUCCESS;
+                break;
+            }
+            case "PEERS?": {
+                if (input.length != 1) {
+                    return RES_INVALID;
+                }
+
+                output = Parser.ParseSelectedPeers(db.selectPeers());
+                break;
+            }
+            default:
+                output = RES_UNKNOWN;
+                break;
         }
+        return output;
     }
 }

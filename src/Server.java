@@ -4,9 +4,10 @@ import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static java.lang.System.out;
-
 public class Server {
+
+    private final static boolean APPEND = false;
+    private final static boolean DEBUG_MODE = true;
 
     public static void main(String[] args) {
 
@@ -14,7 +15,7 @@ public class Server {
         String dbConnectionString = "jdbc:sqlite:test.db";
         String logPath = "test.log";
 
-        try (Logger logger = Logger.Initialize(logPath, true)) {
+        try (Logger logger = Logger.Initialize(logPath, APPEND, DEBUG_MODE)) {
 
             logger.log("BEGIN");
             logger.log(String.format("Arguments: %s", Arrays.toString(args)));
@@ -31,7 +32,7 @@ public class Server {
                             dbConnectionString = g.getOptionArg();
                             break;
                         default:
-                            out.println(ch);
+                            logger.log(Integer.toString(ch));
                     }
                 }
             } catch (GetOptsException e) {
@@ -44,16 +45,16 @@ public class Server {
                 logger.log("Recreating Tables...");
                 db.recreate();
 
-                Thread tcpServer = new Thread(new TCPserver(serverPort), "TCPserver");
-                //Thread udpServer = new Thread(new UDPServer(serverPort), "UPDserver");
+                Thread tcpServer = new Thread(new TCPServer(serverPort), "TCPserver");
+                Thread udpServer = new Thread(new UDPServer(serverPort), "UPDserver");
 
                 logger.log("Starting TCP Server...");
                 tcpServer.start();
                 logger.log("Starting UPD Server...");
-                //udpServer.start();
+                udpServer.start();
 
                 tcpServer.join();
-                //udpServer.join();
+                udpServer.join();
 
             } catch (Exception ex) {
                 logger.log(ex);
