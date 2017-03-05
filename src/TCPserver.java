@@ -10,10 +10,12 @@ class TCPserver implements Runnable {
 
     private int port;
     private DataBaseHandler db;
+    private Logger logger;
 
-    TCPserver(int port, DataBaseHandler db) {
+    TCPserver(int port) {
         this.port = port;
-        this.db = db;
+        this.db = DataBaseHandler.getInstance();
+        this.logger = Logger.getInstance();
     }
 
     @Override
@@ -28,10 +30,17 @@ class TCPserver implements Runnable {
                 ) {
                     // Greetings
                     out.println("HELLO");
+                    out.flush();
 
                     String request;
                     while ((request = in.readLine()) != null) {
 
+                        out.println(request);
+                        out.flush();
+
+                        //Strng result = Parser.parseAndExecuteCommand(request, db);
+
+                        /*
                         String[] input = request.split(Parser.inSep);
                         String command = input[0];
                         System.out.println(command);
@@ -69,14 +78,14 @@ class TCPserver implements Runnable {
                             default:
                                 out.println("Unknown Command: " + command);
                                 break;
-                        }
+                        } */
                     }
-                } catch (SQLException e) {
+                } /*catch (SQLException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.log(ex);
         }
     }
 }

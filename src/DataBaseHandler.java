@@ -6,17 +6,20 @@ public class DataBaseHandler implements AutoCloseable {
 
     private static DataBaseHandler instance;
 
-    static DataBaseHandler getInstance(String connectionString) throws SQLException {
+    static DataBaseHandler Initialize(String connectionString) throws SQLException {
         if (instance == null) {
             instance = new DataBaseHandler(connectionString);
         }
         return instance;
     }
 
+    static DataBaseHandler getInstance() { return instance; }
+
     private Connection connection;
 
     private DataBaseHandler(String connectionString) throws SQLException {
         this.connection = DriverManager.getConnection(connectionString);
+        Logger.getInstance().log("Successfully Connected To Database Instance");
     }
 
     @Override
@@ -44,6 +47,8 @@ public class DataBaseHandler implements AutoCloseable {
         statement.executeUpdate(createPeer);
         statement.executeUpdate(createGossip);
         statement.close();
+
+        Logger.getInstance().log("Successfully Recreated Tables");
     }
 
     void insertPeer(String name, String port, String ip) throws SQLException {
@@ -63,6 +68,8 @@ public class DataBaseHandler implements AutoCloseable {
         preparedStatement.setString(3, name);
         preparedStatement.executeUpdate();
         preparedStatement.close();
+
+        Logger.getInstance().log(String.format("Successfully Upserted Peer: %s - %s:%s", name, ip, port));
     }
 
     void insertGossip(String sha, String dt, String message) throws SQLException {
@@ -74,6 +81,8 @@ public class DataBaseHandler implements AutoCloseable {
         preparedStatement.setString(3, message);
         preparedStatement.executeUpdate();
         preparedStatement.close();
+
+        Logger.getInstance().log(String.format("Successfully Inserted Gossip: %s", message));
     }
 
     boolean exists(String sha) throws SQLException {
