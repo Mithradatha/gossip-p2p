@@ -20,7 +20,7 @@ public class TCPClient {
         ) {
 
             String welcomeMsg = in.readLine();
-            //System.out.println(welcomeMsg);
+            System.out.println(welcomeMsg);
 
             String stdIn;
 
@@ -30,7 +30,7 @@ public class TCPClient {
                 System.out.println(in.readLine());
             }
         } catch (IOException exp) {
-            System.out.println(exp.getMessage());
+            System.err.println(exp.getMessage());
         }
     }
 }

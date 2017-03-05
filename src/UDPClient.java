@@ -1,4 +1,5 @@
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -21,8 +22,8 @@ public class UDPClient {
             InetAddress addr = InetAddress.getByName("localhost");
 
             String stdIn;
-            while ((stdIn = sc.nextLine()) != null) {
-                stdIn += "\n";
+            while (sc.hasNext()) {
+                stdIn = sc.nextLine() + "\n";
                 DatagramPacket sendPacket = new DatagramPacket(stdIn.getBytes(), stdIn.length(), addr, port);
                 clientSocket.send(sendPacket);
                 DatagramPacket receivePacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
@@ -31,7 +32,7 @@ public class UDPClient {
                 System.out.println(message);
             }
 
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
         }
     }
