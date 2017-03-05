@@ -4,8 +4,6 @@ import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static java.lang.System.out;
-
 public class Server {
 
     private final static boolean APPEND = false;
@@ -34,7 +32,7 @@ public class Server {
                             dbConnectionString = g.getOptionArg();
                             break;
                         default:
-                            out.println(ch);
+                            logger.log(Integer.toString(ch));
                     }
                 }
             } catch (GetOptsException e) {
@@ -47,7 +45,7 @@ public class Server {
                 logger.log("Recreating Tables...");
                 db.recreate();
 
-                Thread tcpServer = new Thread(new TCPserver(serverPort), "TCPserver");
+                Thread tcpServer = new Thread(new TCPServer(serverPort), "TCPserver");
                 Thread udpServer = new Thread(new UDPServer(serverPort), "UPDserver");
 
                 logger.log("Starting TCP Server...");

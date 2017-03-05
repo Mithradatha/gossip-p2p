@@ -6,13 +6,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 
-class TCPserver implements Runnable {
+class TCPServer implements Runnable {
 
     private int port;
     private DataBaseHandler db;
     private Logger logger;
 
-    TCPserver(int port) {
+    TCPServer(int port) {
         this.port = port;
         this.db = DataBaseHandler.getInstance();
         this.logger = Logger.getInstance();
