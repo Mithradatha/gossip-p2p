@@ -1,8 +1,7 @@
-import java.io.*;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class UDPClient {
@@ -13,7 +12,7 @@ public class UDPClient {
 
         try (
                 DatagramSocket clientSocket = new DatagramSocket();
-                Scanner sc = new Scanner(System.in);
+                Scanner sc = new Scanner(System.in)
         ) {
             //int port = Integer.parseInt(args[1]);
             //InetAddress addr = InetAddress.getByName(args[0]);
