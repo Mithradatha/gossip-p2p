@@ -20,11 +20,12 @@ public class TCPClient {
         ) {
 
             String welcomeMsg = in.readLine();
-            System.out.println(welcomeMsg);
+            //System.out.println(welcomeMsg);
 
             String stdIn;
 
-            while ((stdIn = sc.nextLine()) != null) {
+            while (sc.hasNext()) {
+                stdIn = sc.nextLine();
                 out.println(stdIn);
                 System.out.println(in.readLine());
             }
