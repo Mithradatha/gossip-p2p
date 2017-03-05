@@ -23,6 +23,7 @@ public class UDPClient {
 
             String stdIn;
             while ((stdIn = sc.nextLine()) != null) {
+                stdIn += "\n";
                 DatagramPacket sendPacket = new DatagramPacket(stdIn.getBytes(), stdIn.length(), addr, port);
                 clientSocket.send(sendPacket);
                 DatagramPacket receivePacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
