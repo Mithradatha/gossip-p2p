@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -32,7 +33,7 @@ class Parser {
         return peerResponse.toString();
     }
 
-    static String ParseAndExecuteCommand(String request, DataBaseHandler db) throws SQLException {
+    static String ParseAndExecuteCommand(String request, DataBaseHandler db) throws SQLException, IOException {
 
         String[] input = request.split(Parser.inSep);
         String command = input[0];
@@ -53,8 +54,8 @@ class Parser {
                     output = "DISCARDED";
                 } else {
                     db.insertGossip(sha, dt, message);
-                    output = RES_SUCCESS;
-                    //db.broadcastGossip(sha, dt, message);
+                    Broadcaster.getInstance().broadcast(request, db.selectPeers());
+                    output = request;
                 }
                 break;
             }

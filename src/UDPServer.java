@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 class UDPServer implements Runnable {
 
