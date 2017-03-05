@@ -16,7 +16,7 @@ public class Client {
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 Scanner sc = new Scanner(System.in);
                 //Scanner user_in = new Scanner(System.in);
-                ) {
+        ) {
 
             String welcomeMsg = in.readLine();
             System.out.println(welcomeMsg);

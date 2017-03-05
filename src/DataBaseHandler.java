@@ -13,7 +13,9 @@ public class DataBaseHandler implements AutoCloseable {
         return instance;
     }
 
-    static DataBaseHandler getInstance() { return instance; }
+    static DataBaseHandler getInstance() {
+        return instance;
+    }
 
     private Connection connection;
 
@@ -82,7 +84,7 @@ public class DataBaseHandler implements AutoCloseable {
         preparedStatement.executeUpdate();
         preparedStatement.close();
 
-        Logger.getInstance().log(String.format("Successfully Inserted Gossip: %s", message));
+        Logger.getInstance().log(String.format("Successfully Inserted Gossip: '%s'", message));
     }
 
     boolean exists(String sha) throws SQLException {
@@ -94,7 +96,9 @@ public class DataBaseHandler implements AutoCloseable {
         preparedStatement.setString(1, sha);
         ResultSet resultSet = preparedStatement.executeQuery();
         if (resultSet.next()) {
-            if (resultSet.getInt("Exists") > 0) { result = true; }
+            if (resultSet.getInt("Exists") > 0) {
+                result = true;
+            }
         }
 
         preparedStatement.close();
@@ -116,13 +120,15 @@ public class DataBaseHandler implements AutoCloseable {
             String ip = resultSet.getString("IP");
             String[] peer = new String[3];
             peer[0] = name;
-            peer[1]= port;
+            peer[1] = port;
             peer[2] = ip;
             result.add(peer);
         }
 
         statement.close();
         resultSet.close();
+
+        Logger.getInstance().log("Successfully Selected Peers");
 
         return result;
     }

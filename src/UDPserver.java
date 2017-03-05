@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 class UDPServer implements Runnable {
@@ -10,23 +10,32 @@ class UDPServer implements Runnable {
 
     private int port;
     private DataBaseHandler db;
+    private Logger logger;
 
-    UDPServer(int port, DataBaseHandler db) {
+    UDPServer(int port) {
         this.port = port;
-        this.db = db;
+        this.db = DataBaseHandler.getInstance();
+        this.logger = Logger.getInstance();
     }
 
     @Override
     public void run() {
         try (DatagramSocket serverSocket = new DatagramSocket(port)) {
-            for(;;) {
+            for (; ; ) {
                 DatagramPacket packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
                 serverSocket.receive(packet);
 
-                System.out.println(packet.getAddress() + " " + packet.getPort() + " " + Arrays.toString(packet.getData()));
+                String message = new String(packet.getData(), "UTF-8").split("\n")[0];
+                logger.log(Parser.UDP, Parser.CLIENT, message);
+
+                String output = Parser.ParseAndExecuteCommand(message, db) + "\n";
+                logger.log(Parser.UDP, Parser.SERVER, output.substring(0, output.length()-1));
+
+                DatagramPacket response = new DatagramPacket(output.getBytes(), output.length(), packet.getAddress(), packet.getPort());
+                serverSocket.send(response);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | SQLException e) {
+            logger.log(e);
         }
     }
 }
