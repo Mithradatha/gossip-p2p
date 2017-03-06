@@ -9,8 +9,8 @@ public class TCPClient {
 
     public static void main(String[] args) {
 
-        String host = "localhost";
-        int port = 2345;
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
 
         try (
                 Socket clientSocket = new Socket(host, port);

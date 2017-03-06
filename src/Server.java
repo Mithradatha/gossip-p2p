@@ -7,13 +7,15 @@ import java.util.Arrays;
 public class Server {
 
     private final static boolean APPEND = false;
-    private final static boolean DEBUG_MODE = true;
+    private final static boolean DEBUG_MODE = false;
 
     public static void main(String[] args) {
 
-        int serverPort = 2345;
-        String dbConnectionString = "jdbc:sqlite:test.db";
-        String logPath = "test.log";
+        //int serverPort = 2345;
+        //String dbConnectionString = "jdbc:sqlite:test.db";
+        int serverPort = -1;
+        String dbConnectionString = "jdbc:sqlite:";
+        String logPath = "server.log";
 
         try (Logger logger = Logger.Initialize(logPath, APPEND, DEBUG_MODE)) {
 
@@ -29,7 +31,7 @@ public class Server {
                             serverPort = Integer.parseInt(g.getOptionArg());
                             break;
                         case 'd':
-                            dbConnectionString = g.getOptionArg();
+                            dbConnectionString += g.getOptionArg();
                             break;
                         default:
                             logger.log(Integer.toString(ch));

@@ -15,11 +15,8 @@ public class UDPClient {
                 DatagramSocket clientSocket = new DatagramSocket();
                 Scanner sc = new Scanner(System.in)
         ) {
-            //int port = Integer.parseInt(args[1]);
-            //InetAddress addr = InetAddress.getByName(args[0]);
-
-            int port = 2345;
-            InetAddress addr = InetAddress.getByName("localhost");
+            InetAddress addr = InetAddress.getByName(args[0]);
+            int port = Integer.parseInt(args[1]);
 
             String stdIn;
             while (sc.hasNext()) {

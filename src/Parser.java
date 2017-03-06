@@ -17,9 +17,9 @@ class Parser {
 
     private final static String RES_UNKNOWN = "BAD UNKNOWN COMMAND";
     private final static String RES_INVALID = "BAD INVALID FORMAT";
-    private final static String RES_SUCCESS = "GOOD";
+    private final static String RES_SUCCESS = "OK";
 
-    static String ParseSelectedPeers(List<String[]> peers) {
+    private static String ParseSelectedPeers(List<String[]> peers) {
         StringBuilder peerResponse = new StringBuilder();
         int count = peers.size();
         peerResponse.append(String.format("PEERS|%s|", count));

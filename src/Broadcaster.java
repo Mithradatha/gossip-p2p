@@ -5,9 +5,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
 
-public class Broadcaster {
-
-    private static int PACKET_SIZE = 1024;
+class Broadcaster {
 
     private static Broadcaster instance;
 
@@ -18,9 +16,10 @@ public class Broadcaster {
         return instance;
     }
 
-    private Broadcaster() {}
+    private Broadcaster() {
+    }
 
-    public void broadcast(String message, List<String[]> peers) throws IOException {
+    void broadcast(String message, List<String[]> peers) throws IOException {
 
         message += "\n";
 
