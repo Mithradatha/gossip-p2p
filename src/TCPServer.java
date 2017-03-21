@@ -20,7 +20,7 @@ class TCPServer implements Runnable {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     TCPClientHandler newHandler = new TCPClientHandler(clientSocket);
-                    newHandler.run();
+                    new Thread(newHandler).start();
                 } catch (IOException ex) {
                     logger.log(ex);
                 }
