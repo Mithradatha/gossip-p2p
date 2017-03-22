@@ -7,7 +7,7 @@ import java.util.Arrays;
 public class Server {
 
     private final static boolean APPEND = false;
-    private final static boolean DEBUG_MODE = false;
+    private final static boolean DEBUG_MODE = true;
 
     public static void main(String[] args) {
 
