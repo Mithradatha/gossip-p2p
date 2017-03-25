@@ -1,36 +1,63 @@
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.Scanner;
 
-public class TCPClient {
+public class TCPClient implements AutoCloseable {
 
-    public static void main(String[] args) {
+    private Socket clientSocket;
+    private PrintWriter out;
+    private BufferedReader in;
 
-        String host = args[0];
-        int port = Integer.parseInt(args[1]);
+    public TCPClient(String host, int port) throws IOException {
 
-        try (
-                Socket clientSocket = new Socket(host, port);
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                Scanner sc = new Scanner(System.in);
-        ) {
+        this.clientSocket = new Socket(host, port);
+        this.out = out = new PrintWriter(clientSocket.getOutputStream(), true);
+        this.in = in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            String welcomeMsg = in.readLine();
-            System.out.println(welcomeMsg);
+        String welcomeMsg = in.readLine();
+    }
 
-            String stdIn;
+    @Override
+    public void close() throws IOException {
 
-            while (sc.hasNext()) {
-                stdIn = sc.nextLine();
-                out.println(stdIn);
-                System.out.println(in.readLine());
-            }
-        } catch (IOException exp) {
-            System.err.println(exp.getMessage());
+        out.close();
+        in.close();
+        clientSocket.close();
+    }
+
+    public List<String[]> getPeers() {
+        out.write("PEERS?\n");
+        out.flush();
+
+        List<String[]> peers = null;
+
+        try {
+            peers = Parser.extractSelectedPeers(in.readLine());
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        return peers;
+    }
+
+    public void sendGossip(String message) {
+        out.write(message);
+        out.flush();
+
+    }
+
+    public void sendPeer(String message) {
+
+        //System.out.println(message);
+
+        out.write(message);
+        out.flush();
     }
 }

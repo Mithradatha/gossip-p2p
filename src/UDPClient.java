@@ -1,36 +1,61 @@
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
+import java.util.List;
 import java.util.Scanner;
 
-public class UDPClient {
+public class UDPClient implements AutoCloseable {
 
     private static int PACKET_SIZE = 1024;
 
-    public static void main(String[] args) {
+    private DatagramSocket clientSocket;
+    private InetAddress addr;
+    private int port;
 
-        try (
-                DatagramSocket clientSocket = new DatagramSocket();
-                Scanner sc = new Scanner(System.in)
-        ) {
-            InetAddress addr = InetAddress.getByName(args[0]);
-            int port = Integer.parseInt(args[1]);
+    public UDPClient(String host, int port) throws Exception {
+        this.clientSocket = new DatagramSocket();
+        this.addr = InetAddress.getByName(host);
+        this.port = port;
+    }
 
-            String stdIn;
-            while (sc.hasNext()) {
-                stdIn = sc.nextLine() + "\n";
-                DatagramPacket sendPacket = new DatagramPacket(stdIn.getBytes(), stdIn.length(), addr, port);
-                clientSocket.send(sendPacket);
-                DatagramPacket receivePacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
-                clientSocket.receive(receivePacket);
-                String message = new String(receivePacket.getData(), "UTF-8").split("\n")[0];
-                System.out.println(message);
-            }
+    public List<String[]> getPeers() {
+        String message = "PEERS?\n";
+        DatagramPacket sendPacket = new DatagramPacket(message.getBytes(), message.length(), addr, port);
+        List<String[]> peers = null;
+        try {
+            clientSocket.send(sendPacket);
+            DatagramPacket receivePacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
+            clientSocket.receive(receivePacket);
+            String response = new String(receivePacket.getData(), "UTF-8").split("\n")[0];
+            peers = Parser.extractSelectedPeers(response);
 
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+
+        return peers;
+    }
+
+    public void sendGossip(String message) {
+        DatagramPacket sendPacket = new DatagramPacket(message.getBytes(), message.length(), addr, port);
+        try {
+            clientSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPeer(String message) {
+        DatagramPacket sendPacket = new DatagramPacket(message.getBytes(), message.length(), addr, port);
+        try {
+            clientSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        clientSocket.close();
     }
 }

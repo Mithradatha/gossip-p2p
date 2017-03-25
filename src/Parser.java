@@ -1,11 +1,14 @@
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class Parser {
 
     final static String nullOp = "%";
     final static String inSep = ":";
+    final static String lineSep = "\\|";
     final static String kv = "=";
 
     final static String GREETINGS = "HELLO";
@@ -85,5 +88,20 @@ class Parser {
                 break;
         }
         return output;
+    }
+
+    public static List<String[]> extractSelectedPeers(String message) {
+        List<String[]> result = new ArrayList<>();
+        //System.out.println(message);
+        String[] arr = message.split(lineSep);
+        for (int i = 2; i < arr.length - 1; i++) {
+            String[] str = arr[i].split(inSep);
+            str[1] = str[1].replace("PORT=", "");
+            str[2] = str[2].replace("IP=", "");
+            result.add(str);
+        }
+        assert arr[1].equals(Integer.toString(result.size()));
+
+        return result;
     }
 }
