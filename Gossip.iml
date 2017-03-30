@@ -3,17 +3,31 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" packagePrefix="com.cse4232.gossip" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/img" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/misc" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/libraries/sqllite-jdbc-3.14.2.1/sqlite-jdbc-3.14.2.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/sqllite-jdbc-3.14.2.1/sqlite-jdbc-3.14.2.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ddp2p-asn1/DD.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/lib/ddp2p-asn1/DD.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>
