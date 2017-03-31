@@ -7,7 +7,6 @@ import java.sql.Timestamp;
 
 public class Logger implements AutoCloseable {
 
-
     private static Logger instance;
 
     public static Logger Initialize(String path, boolean append, boolean debug) throws IOException {
@@ -44,7 +43,7 @@ public class Logger implements AutoCloseable {
         }
     }
 
-    public void log(Exception ex) {
+    public synchronized void log(Exception ex) {
         if (!debugMode) {
             return;
         }
@@ -58,7 +57,7 @@ public class Logger implements AutoCloseable {
         }
     }
 
-    public void log(String str) {
+    public synchronized void log(String str) {
         if (!debugMode) {
             return;
         }
@@ -72,7 +71,7 @@ public class Logger implements AutoCloseable {
         }
     }
 
-    public void log(String type, String side, String str) {
+    public synchronized void log(String type, String side, String str) {
         if (!debugMode) {
             return;
         }

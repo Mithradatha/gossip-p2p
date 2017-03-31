@@ -60,7 +60,7 @@ public class Parser {
                     output = "DISCARDED";
                 } else {
                     db.insertGossip(sha, dt, message);
-                    Broadcaster.getInstance().broadcast(request, db.selectPeers());
+                    //Broadcaster.getInstance().broadcast(request, db.selectPeers());
                     output = request;
                 }
                 break;
@@ -83,7 +83,7 @@ public class Parser {
                     return RES_INVALID;
                 }
 
-                output = Parser.ParseSelectedPeers(db.selectPeers());
+                //output = Parser.ParseSelectedPeers(db.selectPeers());
                 break;
             }
             default:

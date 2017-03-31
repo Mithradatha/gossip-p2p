@@ -1,5 +1,7 @@
 package com.cse4232.gossip.helper;
 
+import com.cse4232.gossip.helper.asn.Peer;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,23 +120,19 @@ public class DataBaseHandler implements AutoCloseable {
         return result;
     }
 
-    List<String[]> selectPeers() throws SQLException {
+    public Peer[] selectPeers() throws SQLException {
         String selectPeers = "SELECT Name, Port, IP FROM Peer;";
 
-        List<String[]> result = new ArrayList<>();
+        List<Peer> peers = new ArrayList<Peer>();
 
         enterRoom(false);
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(selectPeers);
             while (resultSet.next()) {
                 String name = resultSet.getString("Name");
-                String port = resultSet.getString("Port");
+                int port = Integer.parseInt(resultSet.getString("Port"));
                 String ip = resultSet.getString("IP");
-                String[] peer = new String[3];
-                peer[0] = name;
-                peer[1] = port;
-                peer[2] = ip;
-                result.add(peer);
+                peers.add(new Peer(name, port, ip));
             }
 
             statement.close();
@@ -142,7 +140,7 @@ public class DataBaseHandler implements AutoCloseable {
         leaveRoom(false);
         Logger.getInstance().log("Successfully Selected Peers");
 
-        return result;
+        return peers.toArray(new Peer[0]);
     }
 
     //Syncro stuff

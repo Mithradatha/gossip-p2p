@@ -1,42 +1,23 @@
-import java.io.BufferedReader;
+import com.cse4232.gossip.helper.asn.Peer;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.*;
 
-public class TCPTest implements Runnable {
+public class TCPTest {
 
-    private String host;
-    private int port;
-    private List<String> messages;
-
-    public TCPTest(String host, int port, List<String> messages) {
-        this.host = host;
-        this.port = port;
-        this.messages = messages;
-    }
-
-    @Override
-    public void run() {
-        try (
-                Socket clientSocket = new Socket(host, port);
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        ) {
-
-            String welcomeMsg = in.readLine();
-
-            Collections.shuffle(messages, new Random());
-
-            for (String message : messages) {
-                out.println(message);
-                out.flush();
-                in.readLine();
-            }
-
-        } catch (IOException exp) {
-            System.err.println(exp.getMessage());
+    public static void main(String... args) {
+        try {
+            Socket client = new Socket("localhost", 2345);
+            Peer peer = new Peer("Sam", 1234, "172.349.123213");
+            byte[] out = peer.encode();
+            client.getOutputStream().write(out);
+            client.getOutputStream().flush();
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

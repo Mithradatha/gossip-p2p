@@ -1,11 +1,14 @@
-import com.cse4232.gossip.helper.asn.Peer;
+import com.cse4232.gossip.helper.asn.PeersQuery;
 import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.Decoder;
-import java.io.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class PeerTest {
+public class PeersQueryTest {
 
     private static final int BUFFER_SIZE = 512;
 
@@ -22,28 +25,23 @@ public class PeerTest {
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()
         ) {
 
-            Peer peer = new Peer("Sam", 2345, "163.15.13.123");
-            client.getOutputStream().write(peer.encode());
-            client.getOutputStream().write(new Peer("Mary", 1234, "172.123.2131.132").encode());
+            PeersQuery peersQuery = new PeersQuery();
+            client.getOutputStream().write(peersQuery.encode());
 
             byte[] msg = new byte[BUFFER_SIZE];
             Decoder decoder;
             int bytesRead;
 
-            for(;;) {
+            do {
+                bytesRead = serverInput.read(msg);
+                buffer.write(msg);
+                decoder = new Decoder(buffer.toByteArray());
+                if (bytesRead <= 0) break;
+            } while (!decoder.fetchAll(serverInput));
 
-                do {
-                    bytesRead = serverInput.read(msg);
-                    buffer.write(msg);
-                    decoder = new Decoder(buffer.toByteArray());
-                    if (bytesRead <= 0) break;
-                } while (!decoder.fetchAll(serverInput));
-
-                peer = new Peer();
-                peer.decode(decoder);
-                System.out.println(String.format("PEER:%s:PORT=%s:IP=%s%%", peer.getName(), peer.getPort(), peer.getIp()));
-
-            }
+            peersQuery = new PeersQuery();
+            peersQuery.decode(decoder);
+            System.out.println("PEERS?\n");
 
         } catch (IOException | ASN1DecoderFail e) {
             e.printStackTrace();
