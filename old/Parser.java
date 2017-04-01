@@ -3,7 +3,6 @@ package com.cse4232.gossip.helper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import com.cse4232.gossip.server.*;
 

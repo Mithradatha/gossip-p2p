@@ -29,4 +29,9 @@ public class PeersQuery extends ASNObj {
         if (d.getTypeByte() != 0) throw new ASN1DecoderFail("Wrong Decoder");
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "PeersQuery{}";
+    }
 }

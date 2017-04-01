@@ -3,7 +3,7 @@ package com.cse4232.gossip.server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.sql.SQLException;
+
 import com.cse4232.gossip.helper.*;
 
 class UDPServer implements Runnable {

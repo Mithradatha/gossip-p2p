@@ -55,4 +55,13 @@ public class Peer extends ASNObj {
     public ASNObj instance() throws CloneNotSupportedException {
         return new Peer();
     }
+
+    @Override
+    public String toString() {
+        return "Peer{" +
+                "name='" + name + '\'' +
+                ", port=" + port +
+                ", ip='" + ip + '\'' +
+                '}';
+    }
 }

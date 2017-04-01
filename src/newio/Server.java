@@ -1,10 +1,6 @@
 package com.cse4232.gossip.newio;
 
-import com.cse4232.gossip.helper.Logger;
-import sun.net.www.protocol.http.AuthCache;
-
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.*;
 
 public class Server implements Runnable, AutoCloseable {
@@ -23,7 +19,7 @@ public class Server implements Runnable, AutoCloseable {
         } else if (type == UDP) {
             this.udpServer = new DatagramSocket(port);
         } else {
-            throw new Exception("ERROR: Server must either by TCP or UDP type");
+            throw new Exception("ERROR: TCPServer must either by TCP or UDP type");
         }
     }
 
@@ -39,7 +35,7 @@ public class Server implements Runnable, AutoCloseable {
             for (; ; ) {
                 try {
                     Socket client = tcpServer.accept();
-                    new Thread(new Client(client)).start();
+                    new Thread(new ClientHandler(client)).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -49,7 +45,7 @@ public class Server implements Runnable, AutoCloseable {
             for (; ; ) {
                 try {
                     udpServer.receive(packet);
-                    new Thread(new Client(udpServer, packet)).start();
+                    new Thread(new ClientHandler(udpServer, packet)).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

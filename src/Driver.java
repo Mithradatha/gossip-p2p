@@ -1,7 +1,8 @@
-package com.cse4232.gossip.newio;
+package com.cse4232.gossip;
 
 import com.cse4232.gossip.helper.DataBaseHandler;
 import com.cse4232.gossip.helper.Logger;
+import com.cse4232.gossip.udp.UDPServer;
 
 public class Driver {
 
@@ -18,19 +19,19 @@ public class Driver {
         try (
                 Logger logger = Logger.Initialize(path, APPEND, DEBUG_MODE);
                 DataBaseHandler db = DataBaseHandler.Initialize(dbConnectionString);
-                Server tcpServer = new Server(port, Server.TCP);
-                Server udpServer = new Server(port, Server.UDP)
+                //TCPServer tcpServer = new TCPServer(port, TCPServer.TCP);
+                UDPServer udpServer = new UDPServer(port);
         ) {
 
             db.recreate();
 
-            Thread tcpThread = new Thread(tcpServer);
+            //Thread tcpThread = new Thread(tcpServer);
             Thread udpThread = new Thread(udpServer);
 
-            tcpThread.start();
+            //tcpThread.start();
             udpThread.start();
 
-            tcpThread.join();
+            //tcpThread.join();
             udpThread.join();
 
         } catch (Exception e) {

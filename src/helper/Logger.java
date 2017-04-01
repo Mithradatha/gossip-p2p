@@ -7,6 +7,12 @@ import java.sql.Timestamp;
 
 public class Logger implements AutoCloseable {
 
+    public final static String SERVER = "server";
+    public final static String CLIENT = "client";
+
+    public final static String UDP = "udp";
+    public final static String TCP = "tcp";
+
     private static Logger instance;
 
     public static Logger Initialize(String path, boolean append, boolean debug) throws IOException {

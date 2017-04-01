@@ -3,6 +3,8 @@ package com.cse4232.gossip.helper.asn;
 import net.ddp2p.ASN1.*;
 import net.ddp2p.common.config.DD;
 
+import java.util.Arrays;
+
 // PeersAnswer ::= [1] EXPLICIT SEQUENCE OF Peer
 
 public class PeersAnswer extends ASNObj {
@@ -31,5 +33,12 @@ public class PeersAnswer extends ASNObj {
         peers = d.getFirstObject(true).getSequenceOf(Peer.TAG, new Peer[0], new Peer());
         if (d.getTypeByte() != 0) throw new ASN1DecoderFail("Wrong Decoder");
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "PeersAnswer{" +
+                "peers=" + Arrays.toString(peers) +
+                '}';
     }
 }

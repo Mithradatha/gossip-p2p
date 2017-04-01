@@ -1,96 +1,345 @@
 package com.cse4232.gossip.newio;
 
-import com.cse4232.gossip.helper.DataBaseHandler;
-import com.cse4232.gossip.helper.Logger;
-import com.cse4232.gossip.helper.Parser;
 import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
 import com.cse4232.gossip.helper.asn.PeersAnswer;
 import com.cse4232.gossip.helper.asn.PeersQuery;
+import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
+import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 import net.ddp2p.ASN1.ASN1DecoderFail;
+import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
-import java.sql.SQLException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
-public class Client implements Runnable {
+public class Client {
+
+    public static final int TCP = 1;
+    public static final int UDP = 2;
 
     private static final int BUFFER_SIZE = 512;
 
+    private JPanel mainPanel;
+    private JSplitPane outerSplitPane;
+    private JSplitPane innerSplitPane;
+    private JPanel gossipPanel;
+    private JPanel peerPanel;
+    private JPanel peersPanel;
+    private JScrollPane peersScrollPane;
+    private JList peersList;
+    private JPanel innerGossipPanel;
+    private JCheckBox gossipCheckBox;
+    private JButton gossipButton;
+    private JLabel peerLabel;
+    private JButton resetButton;
+    private JTextField nameTextField;
+    private JFormattedTextField ipTextField;
+    private JFormattedTextField portTextField;
+    private JButton peerButton;
+    private JTextField gossipTextField;
+
     private Socket tcpSocket;
-    private InputStream in;
-    private OutputStream out;
-
     private DatagramSocket udpSocket;
-    private SocketAddress address;
-    private byte[] data;
 
-    public Client(Socket client) throws IOException {
-        this.tcpSocket = client;
-        this.in = client.getInputStream();
-        this.out = client.getOutputStream();
-    }
+    public Client(String host, int port, int type) {
 
-    public Client(DatagramSocket client, DatagramPacket packet) {
-        this.udpSocket = client;
-        this.address = packet.getSocketAddress();
-        this.data = packet.getData();
-    }
+        try {
+            if (type == TCP) {
+                this.tcpSocket = new Socket(host, port);
+            } else if (type == UDP) {
+                this.udpSocket = new DatagramSocket(new InetSocketAddress(host, port));
+            } else throw new Exception("ERROR: TCPClient must either by TCP or UDP type");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
+        }
 
-    @Override
-    public void run() {
-        if (udpSocket != null) {
-            Decoder decoder = new Decoder(data);
-            byte type = decoder.getTypeByte();
-            try {
-                switch (type) {
-                    case PeersQuery.TAG:
-                        Peer[] peers = DataBaseHandler.getInstance().selectPeers();
-                        PeersAnswer rs = new PeersAnswer(peers);
-                        byte[] buffer = rs.encode();
-                        DatagramPacket sentPacket = new DatagramPacket(buffer, buffer.length, address);
-                        udpSocket.send(sentPacket);
-                        break;
-                    case Gossip.TAG: break;
-                    case Peer.TAG:
-                        Peer peer = new Peer();
-                        peer.decode(decoder);
-                        //TODO: Parser constants -> Logger constants
-                        DataBaseHandler.getInstance().insertPeer(peer.getName(), Integer.toString(peer.getPort()), peer.getIp());
-                        Logger.getInstance().log(Parser.UDP, Parser.CLIENT,
-                                String.format("PEER:%s:PORT=%s:IP=%s%%", peer.getName(), peer.getPort(), peer.getIp()));
-                        break;
-                    case PeersAnswer.TAG: break;
-                    default: break;
-                }
-            } catch (ASN1DecoderFail | SQLException | IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            for (; ; ) {
-                try {
-                    byte[] buffer = new byte[BUFFER_SIZE];
-                    int bytesRead = in.read(buffer);
-                    if (bytesRead <= 0) break;
-                    Decoder decoder = new Decoder(buffer);
-                    if (decoder.fetchAll(in)) {
-                        byte type = decoder.getTypeByte();
-                        if (type == Peer.TAG) {
-                            Peer peer = new Peer();
-                            peer.decode(decoder);
-                            //TODO: Parser constants -> Logger constants
-                            Logger.getInstance().log(Parser.UDP, Parser.CLIENT,
-                                    String.format("PEER:%s:PORT=%s:IP=%s%%", peer.getName(), peer.getPort(), peer.getIp()));
-                        }
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (actionEvent.getActionCommand().equals("synchronize")) {
+                    try {
+                        updatePeers();
+                    } catch (IOException | ASN1DecoderFail e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException | ASN1DecoderFail e) {
-                    e.printStackTrace();
                 }
+            }
+        });
 
+        gossipButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (actionEvent.getActionCommand().equals("gossipSubmit")) {
+                    try {
+                        sendGossip();
+                    } catch (IOException | NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        peerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (actionEvent.getActionCommand().equals("peerSubmit")) {
+                    try {
+                        sendPeer();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+    
+    private void updatePeers() throws IOException, ASN1DecoderFail {
+
+        PeersQuery query = new PeersQuery();
+        byte[] out = query.encode();
+
+        PeersAnswer answer = new PeersAnswer();
+        byte[] in = new byte[BUFFER_SIZE];
+
+        if (udpSocket != null) {
+
+            DatagramPacket sentPacket = new DatagramPacket(out, out.length, udpSocket.getRemoteSocketAddress());
+            udpSocket.send(sentPacket);
+
+            DatagramPacket receivedPacket = new DatagramPacket(in, in.length);
+            udpSocket.receive(receivedPacket);
+
+            Decoder decoder = new Decoder(in);
+            answer.decode(decoder);
+
+            Peer[] peers = answer.getPeers();
+            peersList.setListData(peers);
+
+        } else {
+
+            OutputStream os = tcpSocket.getOutputStream();
+            os.write(out);
+            os.flush();
+
+            InputStream is = tcpSocket.getInputStream();
+
+            for (; ;) {
+
+                int msgLen = is.read(in);
+                if (msgLen <= 0) break;
+
+                Decoder decoder = new Decoder(in, 0, msgLen);
+                if (decoder.fetchAll(is)) {
+
+                    answer.decode(decoder);
+                    Peer[] peers = answer.getPeers();
+                    peersList.setListData(peers);
+                }
             }
         }
     }
+
+    private void sendPeer() throws IOException {
+
+        String name = nameTextField.getText();
+        String ip = ipTextField.getText();
+        String port = portTextField.getText();
+
+        nameTextField.setText("");
+        ipTextField.setText("");
+        portTextField.setText("");
+
+        Peer peer = new Peer(name, Integer.parseInt(port), ip);
+        byte[] out = peer.encode();
+
+        if (udpSocket != null) {
+
+            DatagramPacket sentPacket = new DatagramPacket(out, out.length, udpSocket.getRemoteSocketAddress());
+            udpSocket.send(sentPacket);
+
+        } else {
+
+            OutputStream os = tcpSocket.getOutputStream();
+            os.write(out);
+            os.flush();
+        }
+    }
+
+    private void sendGossip() throws NoSuchAlgorithmException, IOException {
+
+        String fullMessage = "";
+        String message = gossipTextField.getText();
+        gossipTextField.setText("");
+
+
+        if (gossipCheckBox.isSelected()) {
+
+            Calendar timestamp = ASN1_Util.CalendargetInstance();
+            fullMessage += ASN1_Util.getStringDate(timestamp);
+            fullMessage += ":";
+
+            fullMessage += message;
+
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] digest = messageDigest.digest(fullMessage.getBytes());
+            String hash = Base64.getEncoder().encodeToString(digest);
+
+            Gossip gossip = new Gossip(hash, timestamp, message);
+            byte[] out = gossip.encode();
+
+            if (udpSocket != null) {
+
+                DatagramPacket sentPacket = new DatagramPacket(out, out.length, udpSocket.getRemoteSocketAddress());
+                udpSocket.send(sentPacket);
+
+            } else {
+
+                OutputStream os = tcpSocket.getOutputStream();
+                os.write(out);
+                os.flush();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+
+        String host = "";
+        int port = 0;
+
+        JFrame frame = new JFrame("Gossip ClientHandler");
+
+        GetOpt g = new GetOpt(args, "s:p:TU");
+        int ch = -1;
+        try {
+            while ((ch = g.getNextOption()) != -1) {
+                switch (ch) {
+                    case 's':
+                        host = g.getOptionArg();
+                        break;
+                    case 'p':
+                        port = Integer.parseInt(g.getOptionArg());
+                        break;
+                    case 'T':
+                        frame.setContentPane(new Client(host, port, TCP).mainPanel);
+                        break;
+                    case 'U':
+                        frame.setContentPane(new Client(host, port, UDP).mainPanel);
+                        break;
+                    default:
+                        g.printOptions();
+                }
+            }
+        } catch (GetOptsException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    /*private void updatePeersTCP() {
+        List<String[]> peers = tcpClient.getPeers();
+        List<String> str = new ArrayList<>();
+        peers.forEach((peer) -> str.add(peer[0] + " - " + peer[2] + ":" + peer[1]));
+        peersList.setListData(str.toArray());
+    }
+
+    private void updatePeersUDP() {
+        List<String[]> peers = udpClient.getPeers();
+        List<String> str = new ArrayList<>();
+        peers.forEach((peer) -> str.add(peer[0] + " - " + peer[2] + ":" + peer[1]));
+        peersList.setListData(str.toArray());
+    }
+
+    private void sendGossipTCP() {
+        try {
+
+            String fullMessage = "";
+            String message = gossipTextField.getText();
+            gossipTextField.setText("");
+            if (gossipCheckBox.isSelected()) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSSz")
+                        .format(new Timestamp(System.currentTimeMillis()));
+                fullMessage = timestamp + ":";
+            }
+            fullMessage += message;
+
+            //System.out.println(fullMessage);
+
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] digest = messageDigest.digest(fullMessage.getBytes());
+            String hash = Base64.getEncoder().encodeToString(digest);
+
+            //System.out.println(hash);
+
+            tcpClient.sendGossip(MessageFormat.format("GOSSIP:{0}:{1}%\n", hash, fullMessage));
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendGossipUDP() {
+        try {
+
+            String fullMessage = "";
+            String message = gossipTextField.getText();
+            gossipTextField.setText("");
+            if (gossipCheckBox.isSelected()) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSSz")
+                        .format(new Timestamp(System.currentTimeMillis()));
+                fullMessage = timestamp + ":";
+            }
+            fullMessage += message;
+
+            //System.out.println(fullMessage);
+
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] digest = messageDigest.digest(fullMessage.getBytes());
+            String hash = Base64.getEncoder().encodeToString(digest);
+
+            //System.out.println(hash);
+
+            udpClient.sendGossip(MessageFormat.format("GOSSIP:{0}:{1}%\n", hash, fullMessage));
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendPeerTCP() {
+        String name = nameTextField.getText();
+        String ip = ipTextField.getText();
+        String port = portTextField.getText();
+
+        nameTextField.setText("");
+        ipTextField.setText("");
+        portTextField.setText("");
+
+        tcpClient.sendPeer(MessageFormat.format("PEER:{0}:PORT={1}:IP={2}%\n", name, port, ip));
+    }
+
+    private void sendPeerUDP() {
+        String name = nameTextField.getText();
+        String ip = ipTextField.getText();
+        String port = portTextField.getText();
+
+        nameTextField.setText("");
+        ipTextField.setText("");
+        portTextField.setText("");
+
+        udpClient.sendPeer(MessageFormat.format("PEER:{0}:PORT={1}:IP={2}%\n", name, port, ip));
+    }*/
 }
