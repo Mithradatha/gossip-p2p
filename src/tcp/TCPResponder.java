@@ -6,16 +6,13 @@ import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
 import com.cse4232.gossip.helper.asn.PeersAnswer;
 import com.cse4232.gossip.helper.asn.PeersQuery;
-import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.DatagramPacket;
 import java.net.Socket;
-import java.sql.SQLException;
 
 public class TCPResponder implements Runnable {
 

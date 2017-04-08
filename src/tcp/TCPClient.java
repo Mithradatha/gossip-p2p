@@ -9,6 +9,7 @@ import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,7 +23,7 @@ public class TCPClient {
 
     private static final int BUFFER_SIZE = 512;
 
-    private InputStream is;
+    private DataInputStream is;
     private OutputStream os;
 
     private Logger log;
@@ -69,17 +70,9 @@ public class TCPClient {
 
         PeersAnswer peersAnswer = new PeersAnswer();
         byte[] in = new byte[BUFFER_SIZE];
+        in[0]
 
-        int bytesRead;
-        while ((bytesRead = is.read(in)) > 0) {
-
-            Decoder decoder = new Decoder(in);
-            if (decoder.fetchAll(is)) {
-
-                peersAnswer.decode(decoder);
-            }
-        }
-
+        System.out.println("HERE");
         return peersAnswer.getPeers();
     }
 }
