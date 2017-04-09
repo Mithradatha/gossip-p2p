@@ -1,5 +1,6 @@
 package com.cse4232.gossip.udp;
 
+import com.cse4232.gossip.GossipClient;
 import com.cse4232.gossip.helper.Logger;
 import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
@@ -9,14 +10,18 @@ import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.concurrent.ExecutionException;
 
-public class UDPClient {
+public class UDPClient implements GossipClient {
 
     private static final int PACKET_SIZE = 512;
 
@@ -26,6 +31,7 @@ public class UDPClient {
     private SocketAddress address;
 
     private Logger log;
+
 
     public UDPClient(String host, int port) throws SocketException {
         this.udpSocket = new DatagramSocket(new InetSocketAddress("localhost", ++portCount));
@@ -49,9 +55,9 @@ public class UDPClient {
         udpSocket.send(packet);
     }
 
-    public void sendPeer(String name, String ip, int port) throws IOException {
+    public void sendPeer(String name, String ip, String port) throws IOException {
 
-        Peer peer = new Peer(name, port, ip);
+        Peer peer = new Peer(name, Integer.parseInt(port), ip);
         byte[] out = peer.encode();
 
         DatagramPacket packet = new DatagramPacket(out, out.length, address);

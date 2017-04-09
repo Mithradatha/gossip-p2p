@@ -4,6 +4,7 @@ import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
 import com.cse4232.gossip.helper.asn.PeersAnswer;
 import com.cse4232.gossip.helper.asn.PeersQuery;
+import com.cse4232.gossip.tcp.TCPClient;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 import net.ddp2p.ASN1.ASN1DecoderFail;
@@ -20,10 +21,11 @@ import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class Client {
 
-    public static final int TCP = 1;
+   /* public static final int TCP = 1;
     public static final int UDP = 2;
 
     private static final int BUFFER_SIZE = 512;
@@ -63,15 +65,28 @@ public class Client {
             System.exit(1);
         }
 
+
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (actionEvent.getActionCommand().equals("synchronize")) {
-                    try {
-                        updatePeers();
-                    } catch (IOException | ASN1DecoderFail e) {
-                        e.printStackTrace();
-                    }
+                    new SwingWorker<Peer[], Void>() {
+                        @Override
+                        protected Peer[] doInBackground() throws Exception {
+                            return updatePeers();
+                        }
+
+                        @Override
+                        protected void done() {
+                            try {
+                                Peer[] peers = get();
+                                peersList.setListData(peers);
+
+                            } catch (InterruptedException | ExecutionException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }.run();
                 }
             }
         });
@@ -103,7 +118,7 @@ public class Client {
         });
     }
     
-    private void updatePeers() throws IOException, ASN1DecoderFail {
+    private Peer[] updatePeers() throws IOException, ASN1DecoderFail {
 
         PeersQuery query = new PeersQuery();
         byte[] out = query.encode();
@@ -122,8 +137,7 @@ public class Client {
             Decoder decoder = new Decoder(in);
             answer.decode(decoder);
 
-            Peer[] peers = answer.getPeers();
-            peersList.setListData(peers);
+            return answer.getPeers();
 
         } else {
 
@@ -142,11 +156,12 @@ public class Client {
                 if (decoder.fetchAll(is)) {
 
                     answer.decode(decoder);
-                    Peer[] peers = answer.getPeers();
-                    peersList.setListData(peers);
+                    return answer.getPeers();
                 }
             }
         }
+
+        return null;
     }
 
     private void sendPeer() throws IOException {
@@ -209,14 +224,14 @@ public class Client {
                 os.flush();
             }
         }
-    }
+    }*/
 
     public static void main(String[] args) {
 
         String host = "";
         int port = 0;
 
-        JFrame frame = new JFrame("Gossip ClientHandler");
+        boolean isTcp = false;
 
         GetOpt g = new GetOpt(args, "s:p:TU");
         int ch = -1;
@@ -230,10 +245,10 @@ public class Client {
                         port = Integer.parseInt(g.getOptionArg());
                         break;
                     case 'T':
-                        frame.setContentPane(new Client(host, port, TCP).mainPanel);
+                        isTcp = true;
                         break;
                     case 'U':
-                        frame.setContentPane(new Client(host, port, UDP).mainPanel);
+                        //frame.setContentPane(new Client(host, port, UDP).mainPanel);
                         break;
                     default:
                         g.printOptions();
@@ -244,9 +259,15 @@ public class Client {
             System.exit(1);
         }
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+        if (isTcp) {
+            try {
+                TCPClient tcpClient = new TCPClient(host, port);
+                //tcpClient.run();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     /*private void updatePeersTCP() {

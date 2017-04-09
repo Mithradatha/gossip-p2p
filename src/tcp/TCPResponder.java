@@ -74,10 +74,16 @@ public class TCPResponder implements Runnable {
                             PeersQuery peersQuery = new PeersQuery();
                             log.log(Logger.TCP, Logger.SERVER, peersQuery.toString());
 
+                            log.log("Peers QUERIED");
+
                             Peer[] peers = db.selectPeers();
+
+                            log.log("RETURNED PEERS");
+
                             PeersAnswer peersAnswer = new PeersAnswer(peers);
                             log.log(Logger.TCP, Logger.SERVER, peersAnswer.toString());
 
+                            log.log("ENCODING PEERS");
                             byte[] out = peersAnswer.encode();
                             os.write(out);
                             os.flush();
@@ -90,7 +96,6 @@ public class TCPResponder implements Runnable {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
                 break;
             }
         }

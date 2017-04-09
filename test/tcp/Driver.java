@@ -28,7 +28,7 @@ public class Driver {
             TCPClient client = new TCPClient(host, port);
 
             for (String[] peer : peers) {
-                client.sendPeer(peer[0], peer[1], Integer.parseInt(peer[2]));
+                client.sendPeer(peer[0], peer[1], (peer[2]));
             }
 
             for (String gossip : gossips) {
