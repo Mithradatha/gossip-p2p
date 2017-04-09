@@ -30,13 +30,20 @@ public class UDPClient implements GossipClient {
     private DatagramSocket udpSocket;
     private SocketAddress address;
 
+    private String host;
+    private int port;
+
     private Logger log;
 
 
     public UDPClient(String host, int port) throws SocketException {
         this.udpSocket = new DatagramSocket(new InetSocketAddress("localhost", ++portCount));
         this.address = new InetSocketAddress(host, port);
+        this.host = host;
+        this.port = port;
         this.log = Logger.getInstance();
+
+        log.log(Logger.UDP, Logger.CLIENT, Logger.WARN, String.format("Sending to %s:%d", host, port));
     }
 
     public void sendGossip(String message) throws NoSuchAlgorithmException, IOException {
@@ -53,6 +60,8 @@ public class UDPClient implements GossipClient {
 
         DatagramPacket packet = new DatagramPacket(out, out.length, address);
         udpSocket.send(packet);
+
+        log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, gossip.toString());
     }
 
     public void sendPeer(String name, String ip, String port) throws IOException {
@@ -62,6 +71,8 @@ public class UDPClient implements GossipClient {
 
         DatagramPacket packet = new DatagramPacket(out, out.length, address);
         udpSocket.send(packet);
+
+        log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peer.toString());
     }
 
     public Peer[] getPeers() throws IOException, ASN1DecoderFail {
@@ -71,6 +82,8 @@ public class UDPClient implements GossipClient {
 
         DatagramPacket sendPacket = new DatagramPacket(out, out.length, address);
         udpSocket.send(sendPacket);
+
+        log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peersQuery.toString());
 
         byte[] in = new byte[PACKET_SIZE];
         DatagramPacket receivePacket = new DatagramPacket(in, PACKET_SIZE);
@@ -84,6 +97,27 @@ public class UDPClient implements GossipClient {
         PeersAnswer peersAnswer = new PeersAnswer();
         peersAnswer.decode(decoder);
 
+        log.log(Logger.UDP, Logger.CLIENT, Logger.RECV, peersAnswer.toString());
+
         return peersAnswer.getPeers();
     }
+
+    @Override
+    public String getHost() {
+        return host;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public String getType() {
+        return "UDP";
+    }
+
+    @Override
+    public void close() { udpSocket.close(); }
+
 }

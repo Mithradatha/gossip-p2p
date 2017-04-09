@@ -13,11 +13,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class TCPResponder implements Runnable {
 
     private static final int BUFFER_SIZE = 512;
+    private static final int TIME_OUT = 20*1000;
 
+    private Socket sock;
     private InputStream is;
     private OutputStream os;
 
@@ -25,8 +28,10 @@ public class TCPResponder implements Runnable {
     private DataBaseHandler db;
 
     public TCPResponder(Socket tcpSocket) throws IOException {
-        this.is = tcpSocket.getInputStream();
-        this.os = tcpSocket.getOutputStream();
+        this.sock = tcpSocket;
+        sock.setSoTimeout(TIME_OUT);
+        this.is = sock.getInputStream();
+        this.os = sock.getOutputStream();
         this.log = Logger.getInstance();
         this.db = DataBaseHandler.getInstance();
     }
@@ -53,37 +58,32 @@ public class TCPResponder implements Runnable {
                         case Gossip.TAG:
                             Gossip gossip = new Gossip();
                             gossip.decode(decoder);
+                            log.log(Logger.TCP, Logger.SERVER, Logger.RECV, gossip.toString());
                             String hash = gossip.getSha256hash();
                             String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
                             String message = gossip.getMessage();
                             db.insertGossip(hash, dt, message);
-                            log.log(Logger.TCP, Logger.SERVER, gossip.toString());
                             break;
 
                         case Peer.TAG:
                             Peer peer = new Peer();
                             peer.decode(decoder);
+                            log.log(Logger.TCP, Logger.SERVER, Logger.RECV, peer.toString());
                             String name = peer.getName();
                             String ip = peer.getIp();
                             String port = Integer.toString(peer.getPort());
                             db.insertPeer(name, port, ip);
-                            log.log(Logger.TCP, Logger.SERVER, peer.toString());
                             break;
 
                         case PeersQuery.TAG:
                             PeersQuery peersQuery = new PeersQuery();
-                            log.log(Logger.TCP, Logger.SERVER, peersQuery.toString());
-
-                            log.log("Peers QUERIED");
+                            log.log(Logger.TCP, Logger.SERVER, Logger.RECV, peersQuery.toString());
 
                             Peer[] peers = db.selectPeers();
 
-                            log.log("RETURNED PEERS");
-
                             PeersAnswer peersAnswer = new PeersAnswer(peers);
-                            log.log(Logger.TCP, Logger.SERVER, peersAnswer.toString());
+                            log.log(Logger.TCP, Logger.SERVER, Logger.SENT, peersAnswer.toString());
 
-                            log.log("ENCODING PEERS");
                             byte[] out = peersAnswer.encode();
                             os.write(out);
                             os.flush();
@@ -91,13 +91,21 @@ public class TCPResponder implements Runnable {
 
                         default:
                             log.log("Incorrect Data Tag");
-                            System.exit(1);
                     }
                 }
-
-            } catch (Exception e) {
+            } catch (SocketTimeoutException e) {
+                log.log(Logger.TCP, Logger.SERVER, Logger.WARN, e.getLocalizedMessage());
                 break;
-            }
+            } catch (Exception ignored) { break; }
+        }
+
+        try {
+            is.close();
+            os.close();
+            sock.close();
+            log.log(Logger.TCP, Logger.SERVER, Logger.WARN, "Socket Closed");
+        } catch (IOException e) {
+            log.log(e);
         }
     }
 }

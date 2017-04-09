@@ -58,10 +58,7 @@ public class Gossip extends ASNObj {
 
     @Override
     public String toString() {
-        return "Gossip{" +
-                "sha256hash='" + sha256hash + '\'' +
-                ", timestamp=" + ASN1_Util.getStringDate(timestamp) +
-                ", message='" + message + '\'' +
-                '}';
+        //GOSSIP:mBHL7IKilvdcOFKR03ASvBNX//ypQkTRUvilYmB1/OY=:2017-01-09-16-18-20-001Z:Tom eats Jerry%
+        return "GOSSIP:" + sha256hash + ":" + ASN1_Util.getStringDate(timestamp) + ":" + message + "%";
     }
 }

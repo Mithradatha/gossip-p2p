@@ -45,30 +45,30 @@ public class UDPResponder implements Runnable {
                 case Gossip.TAG:
                     Gossip gossip = new Gossip();
                     gossip.decode(decoder);
+                    log.log(Logger.UDP, Logger.SERVER, Logger.RECV, gossip.toString());
                     String hash = gossip.getSha256hash();
                     String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
                     String message = gossip.getMessage();
                     db.insertGossip(hash, dt, message);
-                    log.log(Logger.UDP, Logger.SERVER, gossip.toString());
                     break;
 
                 case Peer.TAG:
                     Peer peer = new Peer();
                     peer.decode(decoder);
+                    log.log(Logger.UDP, Logger.SERVER, Logger.RECV, peer.toString());
                     String name = peer.getName();
                     String ip = peer.getIp();
                     String port = Integer.toString(peer.getPort());
                     db.insertPeer(name, port, ip);
-                    log.log(Logger.UDP, Logger.SERVER, peer.toString());
                     break;
 
                 case PeersQuery.TAG:
                     PeersQuery peersQuery = new PeersQuery();
-                    log.log(Logger.UDP, Logger.SERVER, peersQuery.toString());
+                    log.log(Logger.UDP, Logger.SERVER, Logger.RECV, peersQuery.toString());
 
                     Peer[] peers = db.selectPeers();
                     PeersAnswer peersAnswer = new PeersAnswer(peers);
-                    log.log(Logger.UDP, Logger.SERVER, peersAnswer.toString());
+                    log.log(Logger.UDP, Logger.SERVER, Logger.SENT, peersAnswer.toString());
 
                     byte[] out = peersAnswer.encode();
                     DatagramPacket datagramPacket = new DatagramPacket(out, out.length, packet.getSocketAddress());

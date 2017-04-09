@@ -9,9 +9,15 @@ public class Logger implements AutoCloseable {
 
     public final static String SERVER = "server";
     public final static String CLIENT = "client";
+    public final static String DRIVER = "driver";
 
     public final static String UDP = "udp";
     public final static String TCP = "tcp";
+    public final static String NOP = "nop";
+
+    public final static String SENT = "sent";
+    public final static String RECV = "recv";
+    public final static String WARN = "warn";
 
     private static Logger instance;
 
@@ -77,15 +83,16 @@ public class Logger implements AutoCloseable {
         }
     }
 
-    public synchronized void log(String type, String side, String str) {
+    public synchronized void log(String protocol, String unit, String direction, String str) {
         if (!debugMode) {
             return;
         }
         try {
-            String string = String.format("%s: [%s][%s] %s\n",
+            String string = String.format("%s: [%s][%s][%s] %s\n",
                     (new Timestamp(System.currentTimeMillis())).toString(),
-                    type,
-                    side,
+                    protocol,
+                    unit,
+                    direction,
                     str);
             fileOutputStream.write(string.getBytes());
         } catch (IOException e) {

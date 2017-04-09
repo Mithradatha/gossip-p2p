@@ -58,10 +58,7 @@ public class Peer extends ASNObj {
 
     @Override
     public String toString() {
-        return "Peer{" +
-                "name='" + name + '\'' +
-                ", port=" + port +
-                ", ip='" + ip + '\'' +
-                '}';
+        //PEER:John:PORT=2356:IP=163.118.239.68%
+        return String.format("PEER:%s:PORT=%d:IP=%s%%", name, port, ip);
     }
 }

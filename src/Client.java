@@ -5,22 +5,16 @@ import com.cse4232.gossip.helper.asn.Peer;
 import com.cse4232.gossip.tcp.TCPClient;
 import com.cse4232.gossip.udp.UDPClient;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
-import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.SocketException;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-public class Client {
+public class Client implements Runnable {
 
     private static final int STATUS_TIMER = 5000;
+    private static final String TITLE_ICON = "img/title.png";
 
     private JPanel mainPanel;
     private JSplitPane outerSplitPane;
@@ -45,83 +39,76 @@ public class Client {
     private JLabel statusMessage;
 
     private Logger log;
+    private GossipClient client;
 
-    public Client(GossipClient client, String host, int port) {
+    public Client(GossipClient client) {
+        this.client = client;
         this.log = Logger.getInstance();
 
-        connectionMessage.setText(String.format("Connected to: %s:%d", host, port));
+        String host = client.getHost();
+        int port = client.getPort();
+        String type = client.getType();
 
-        Timer timer = new Timer(STATUS_TIMER, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                statusMessage.setText("");
+        connectionMessage.setText(String.format("Connected to: [%s] %s:%d", type, host, port));
+
+        Timer timer = new Timer(STATUS_TIMER, actionEvent -> statusMessage.setText(""));
+
+        resetButton.addActionListener(actionEvent -> {
+            if (actionEvent.getActionCommand().equals("synchronize")) {
+                new SwingWorker<Peer[], Void>() {
+
+                    @Override
+                    protected Peer[] doInBackground() throws Exception { return client.getPeers(); }
+
+                    @Override
+                    protected void done() {
+
+                        try {
+
+                            Peer[] peers = get();
+                            peersList.setListData(peers);
+                            statusMessage.setText("Synchronized Peers");
+                            timer.start();
+
+                        } catch (Exception e) {
+                            shutdown(e);
+                        }
+                    }
+                }.run();
             }
         });
 
-        resetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (actionEvent.getActionCommand().equals("synchronize")) {
-                    new SwingWorker<Peer[], Void>() {
-                        @Override
-                        protected Peer[] doInBackground() throws Exception {
-                            return client.getPeers();
-                        }
-
-                        @Override
-                        protected void done() {
-                            try {
-                                Peer[] peers = get();
-                                peersList.setListData(peers);
-                                statusMessage.setText("Synchronized Peers");
-                                timer.start();
-
-                            } catch (InterruptedException | ExecutionException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }.run();
+        gossipButton.addActionListener(actionEvent -> {
+            if (actionEvent.getActionCommand().equals("gossipSubmit")) {
+                try {
+                    String gossip = gossipTextField.getText();
+                    gossipTextField.setText("");
+                    client.sendGossip(gossip);
+                    statusMessage.setText("Sent Gossip Message");
+                    timer.start();
+                } catch (Exception e) {
+                    shutdown(e);
                 }
             }
         });
 
-        gossipButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (actionEvent.getActionCommand().equals("gossipSubmit")) {
-                    try {
-                        String gossip = gossipTextField.getText();
-                        gossipTextField.setText("");
-                        client.sendGossip(gossip);
-                        statusMessage.setText("Sent Gossip Message");
-                        timer.start();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
+        peerButton.addActionListener(actionEvent -> {
+            if (actionEvent.getActionCommand().equals("peerSubmit")) {
+                try {
+                    String name = nameTextField.getText();
+                    String ip = ipTextField.getText();
+                    String port1 = portTextField.getText();
 
-        peerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (actionEvent.getActionCommand().equals("peerSubmit")) {
-                    try {
-                        String name = nameTextField.getText();
-                        String ip = ipTextField.getText();
-                        String port = portTextField.getText();
+                    nameTextField.setText("");
+                    ipTextField.setText("");
+                    portTextField.setText("");
 
-                        nameTextField.setText("");
-                        ipTextField.setText("");
-                        portTextField.setText("");
+                    client.sendPeer(name, ip, port1);
+                    statusMessage.setText("Sent Peer Message");
+                    timer.start();
 
-                        client.sendPeer(name, ip, port);
-                        statusMessage.setText("Sent Peer Message");
-                        timer.start();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                } catch (Exception e) {
+                    shutdown(e);
                 }
             }
         });
@@ -156,35 +143,40 @@ public class Client {
                         g.printOptions();
                 }
             }
-        } catch (GetOptsException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
 
-        if (isTcp == isUdp) System.exit(1);
+            GossipClient gossipClient = isTcp? new TCPClient(host, port) : new UDPClient(host, port);
+            new Client(gossipClient).run();
 
-        JFrame frame = new JFrame("Gossip Client");
-
-        try {
-
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            if (isTcp) {
-
-                GossipClient tcpClient = new TCPClient(host, port);
-                frame.setContentPane(new Client(tcpClient, host, port).mainPanel);
-
-            } else {
-
-                GossipClient udpClient = new UDPClient(host, port);
-                frame.setContentPane(new Client(udpClient, host, port).mainPanel);
-
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+    @Override
+    public void run() {
+        try {
+            JFrame frame = new JFrame("Gossip Client");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            frame.setContentPane(this.mainPanel);
+            frame.setIconImage(new ImageIcon(TITLE_ICON).getImage());
+            //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent windowEvent) {
+                    super.windowClosing(windowEvent);
+                    shutdown(new Exception(""));
+                }
+            });
+            frame.pack();
+            frame.setVisible(true);
+        } catch (Exception e) {
+            log.log(e);
+        }
+    }
+
+    private void shutdown(Exception e) {
+        log.log(Logger.NOP, Logger.CLIENT, Logger.WARN, String.format("Shutting Down... %s", e.getLocalizedMessage()));
+        client.close();
+        System.exit(1);
     }
 }

@@ -32,6 +32,6 @@ public class PeersQuery extends ASNObj {
 
     @Override
     public String toString() {
-        return "PeersQuery{}";
+        return "PEERS?\\n";
     }
 }

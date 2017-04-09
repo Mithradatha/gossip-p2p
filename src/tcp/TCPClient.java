@@ -13,6 +13,7 @@ import jdk.internal.util.xml.impl.Input;
 import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
+import sun.rmi.runtime.Log;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -33,16 +34,24 @@ public class TCPClient implements GossipClient {
 
     private static final int BUFFER_SIZE = 512;
 
+    private Socket sock;
     private InputStream is;
     private OutputStream os;
+
+    private String host;
+    private int port;
 
     private Logger log;
 
     public TCPClient(String host, int port) throws IOException {
-        Socket tcpSocket = new Socket(host, port);
-        this.is = tcpSocket.getInputStream();
-        this.os = tcpSocket.getOutputStream();
+        this.sock = new Socket(host, port);
+        this.is = sock.getInputStream();
+        this.os = sock.getOutputStream();
+        this.host = host;
+        this.port = port;
         this.log = Logger.getInstance();
+
+        log.log(Logger.TCP, Logger.CLIENT, Logger.WARN, String.format("Connecting to %s:%d", host, port));
     }
 
     public void sendGossip(String message) throws NoSuchAlgorithmException, IOException {
@@ -59,6 +68,8 @@ public class TCPClient implements GossipClient {
 
         os.write(out);
         os.flush();
+
+        log.log(Logger.TCP, Logger.CLIENT, Logger.SENT, gossip.toString());
     }
 
     public void sendPeer(String name, String ip, String port) throws IOException {
@@ -68,6 +79,8 @@ public class TCPClient implements GossipClient {
 
         os.write(out);
         os.flush();
+
+        log.log(Logger.TCP, Logger.CLIENT, Logger.SENT, peer.toString());
     }
 
     public Peer[] getPeers() throws IOException, ASN1DecoderFail {
@@ -78,12 +91,14 @@ public class TCPClient implements GossipClient {
         os.write(out);
         os.flush();
 
+        log.log(Logger.TCP, Logger.CLIENT, Logger.SENT, peersQuery.toString());
+
         PeersAnswer peersAnswer = new PeersAnswer();
         byte[] in = new byte[BUFFER_SIZE];
 
         is.read(in, 0, 1);
         byte type = in[0];
-        assert type == PeersAnswer.TAG;
+        //assert type == PeersAnswer.TAG;
 
         is.read(in, 1, 1);
         byte len = in[1];
@@ -95,6 +110,31 @@ public class TCPClient implements GossipClient {
         Decoder decoder = new Decoder(in);
         peersAnswer.decode(decoder);
 
+        log.log(Logger.TCP, Logger.CLIENT, Logger.RECV, peersAnswer.toString());
+
         return peersAnswer.getPeers();
+    }
+
+    @Override
+    public String getHost() {
+        return host;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public String getType() {
+        return "TCP";
+    }
+
+    public void close() {
+        try {
+            if (is != null) is.close();
+            if (os != null) os.close();
+            if (sock != null) sock.close();
+        } catch (IOException ignored) {}
     }
 }

@@ -37,8 +37,15 @@ public class PeersAnswer extends ASNObj {
 
     @Override
     public String toString() {
-        return "PeersAnswer{" +
-                "peers=" + Arrays.toString(peers) +
-                '}';
+        //PEERS|2|John:PORT=2356:IP=163.118.239.68|Mary:PORT=2355:IP=163.118.237.60|%
+        StringBuilder builder = new StringBuilder();
+        builder.append("PEERS|").append(peers.length).append("|");
+        for (Peer peer : peers) {
+            builder.append(peer.getName());
+            builder.append(":PORT=").append(peer.getPort());
+            builder.append(":IP=").append(peer.getIp());
+            builder.append("|");
+        }
+        return builder.append("%").toString();
     }
 }

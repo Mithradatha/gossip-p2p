@@ -10,4 +10,12 @@ public interface GossipClient {
     public void sendPeer(String name, String ip, String port) throws Exception;
 
     public Peer[] getPeers() throws Exception;
+
+    public String getHost();
+
+    public int getPort();
+
+    public String getType();
+
+    public void close();
 }
