@@ -4,7 +4,6 @@ import com.cse4232.gossip.helper.asn.Peer;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -13,9 +12,9 @@ public class DataBaseHandler implements AutoCloseable {
     private static DataBaseHandler instance;
 
     //Readers/Writers solution
-    private Semaphore room = new Semaphore(1);
-    private Semaphore turnstile = new Semaphore(1);
-    private Semaphore leavestile = new Semaphore(1);
+    private final Semaphore room = new Semaphore(1);
+    private final Semaphore turnstile = new Semaphore(1);
+    private final Semaphore leavestile = new Semaphore(1);
     private int inRoom = 0;
 
     public static DataBaseHandler Initialize(String connectionString) throws SQLException {
@@ -124,7 +123,7 @@ public class DataBaseHandler implements AutoCloseable {
     public Peer[] selectPeers() throws SQLException {
         String selectPeers = "SELECT Name, Port, IP FROM Peer;";
 
-        List<Peer> peers = new ArrayList<Peer>();
+        List<Peer> peers = new ArrayList<>();
 
         enterRoom(false);
             Statement statement = connection.createStatement();
@@ -157,7 +156,7 @@ public class DataBaseHandler implements AutoCloseable {
                     inRoom ++;
                 }
             turnstile.release();
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException ignored) {}
     }
 
     private void leaveRoom(boolean writer)
@@ -172,7 +171,7 @@ public class DataBaseHandler implements AutoCloseable {
                     if (inRoom == 0)
                         room.release();
                 leavestile.release();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException ignored) {}
         }
     }
 

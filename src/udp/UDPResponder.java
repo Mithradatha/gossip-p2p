@@ -6,22 +6,19 @@ import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
 import com.cse4232.gossip.helper.asn.PeersAnswer;
 import com.cse4232.gossip.helper.asn.PeersQuery;
-import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.sql.SQLException;
 
-public class UDPResponder implements Runnable {
+class UDPResponder implements Runnable {
 
-    private DatagramSocket udpSocket;
-    private DatagramPacket packet;
+    private final DatagramSocket udpSocket;
+    private final DatagramPacket packet;
 
-    private Logger log;
-    private DataBaseHandler db;
+    private final Logger log;
+    private final DataBaseHandler db;
 
     public UDPResponder(DatagramSocket udpSocket, DatagramPacket packet) {
         this.udpSocket = udpSocket;

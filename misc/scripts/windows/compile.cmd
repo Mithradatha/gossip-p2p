@@ -1,2 +1,1 @@
-javac -classpath ".;.\libraries\sqllite-jdbc-3.14.2.1\sqlite-jdbc-3.14.2.1.jar" .\src\*.java
-EXIT
+for /r %%a in (src\*.java) do ( javac -classpath ".;.\lib\ddp2p-asn1\DD.jar;.\lib\sqllite-jdbc-3.14.2.1\sqlite-jdbc-3.14.2.1.jar" -d out\ "%%a" )

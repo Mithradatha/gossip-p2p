@@ -1,3 +1,5 @@
+package test;
+
 import com.cse4232.gossip.helper.asn.PeersQuery;
 import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.Decoder;
@@ -8,7 +10,7 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class PeersQueryTest {
+class PeersQueryTest {
 
     private static final int BUFFER_SIZE = 512;
 

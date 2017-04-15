@@ -9,11 +9,10 @@ import com.cse4232.gossip.udp.UDPServer;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class Driver {
+class Driver {
 
     private static final boolean APPEND = false;
     private static final boolean DEBUG_MODE = true;
@@ -25,6 +24,8 @@ public class Driver {
         String host = "";
         int serverPort = -1;
         String dbConnectionString = "jdbc:sqlite:";
+        String message = "";
+        String timestamp = "";
         boolean isTcp = false;
         boolean isUdp = false;
 
@@ -32,8 +33,8 @@ public class Driver {
 
             log.log(Logger.NOP, Logger.DRIVER, Logger.WARN, String.format("Arguments: %s", Arrays.toString(args)));
 
-            GetOpt g = new GetOpt(args, "s:p:d:TU");
-            int ch = -1;
+            GetOpt g = new GetOpt(args, "s:p:d:m:t:TU");
+            int ch;
             try {
 
                 while ((ch = g.getNextOption()) != -1) {
@@ -47,6 +48,12 @@ public class Driver {
                             break;
                         case 'd':
                             dbConnectionString += g.getOptionArg();
+                            break;
+                        case 'm':
+                            message = g.getOptionArg();
+                            break;
+                        case 't':
+                            timestamp = g.getOptionArg();
                             break;
                         case 'T':
                             isTcp = true;

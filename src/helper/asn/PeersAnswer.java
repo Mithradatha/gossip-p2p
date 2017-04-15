@@ -1,9 +1,6 @@
 package com.cse4232.gossip.helper.asn;
 
 import net.ddp2p.ASN1.*;
-import net.ddp2p.common.config.DD;
-
-import java.util.Arrays;
 
 // PeersAnswer ::= [1] EXPLICIT SEQUENCE OF Peer
 

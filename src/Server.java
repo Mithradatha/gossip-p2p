@@ -10,26 +10,30 @@ import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class Server {
+class Server {
 
-    private final static boolean APPEND = false;
-    private final static boolean DEBUG_MODE = true;
+    private static final boolean APPEND = false;
+    private static final boolean DEBUG_MODE = true;
 
-    public static void main(String[] args) {
+    private static final String LOG_PATH = "src/server.log";
+
+    public static void main(String... args) {
 
         int serverPort = -1;
         String dbConnectionString = "jdbc:sqlite:";
-        String logPath = "server.log";
+        String host = "";
+        int witness = -1;
 
-        try (Logger logger = Logger.Initialize(logPath, APPEND, DEBUG_MODE)) {
+        try (Logger log = Logger.Initialize(LOG_PATH, APPEND, DEBUG_MODE)) {
 
-            logger.log("BEGIN");
-            logger.log(String.format("Arguments: %s", Arrays.toString(args)));
+            log.log(Logger.NOP, Logger.DRIVER, Logger.WARN, String.format("Arguments: %s", Arrays.toString(args)));
 
-            GetOpt g = new GetOpt(args, "p:d:");
-            int ch = -1;
+            GetOpt g = new GetOpt(args, "p:d:h:w:");
+            int ch;
             try {
+
                 while ((ch = g.getNextOption()) != -1) {
+
                     switch (ch) {
                         case 'p':
                             serverPort = Integer.parseInt(g.getOptionArg());
@@ -37,37 +41,42 @@ public class Server {
                         case 'd':
                             dbConnectionString += g.getOptionArg();
                             break;
+                        case 'h':
+                            host = g.getOptionArg();
+                            break;
+                        case 'w':
+                            witness = Integer.parseInt(g.getOptionArg());
+                            break;
                         default:
-                            logger.log(Integer.toString(ch));
+                            log.log(Integer.toString(ch));
                     }
                 }
+
+                log.log(Logger.NOP, Logger.DRIVER, Logger.WARN, "Connecting To Database Instance...");
+                try (DataBaseHandler db = DataBaseHandler.Initialize(dbConnectionString)) {
+
+                    log.log(Logger.NOP, Logger.DRIVER, Logger.WARN,"Recreating Tables...");
+                    db.recreate();
+
+                    Thread tcpServer = new Thread(new TCPServer(serverPort), "TCPserver");
+                    Thread udpServer = new Thread(new UDPServer(serverPort), "UPDserver");
+
+                    log.log(Logger.NOP, Logger.DRIVER, Logger.WARN,"Starting TCP Server...");
+                    tcpServer.start();
+                    log.log(Logger.NOP, Logger.DRIVER, Logger.WARN,"Starting UPD Server...");
+                    udpServer.start();
+
+                    if (!host.isEmpty() && witness != -1) {}
+
+                    tcpServer.join();
+                    udpServer.join();
+
+                } catch (Exception ex) {
+                    log.log(ex);
+                }
             } catch (GetOptsException e) {
-                logger.log(e);
+                log.log(e);
             }
-
-            logger.log("Connecting To Database Instance...");
-            try (DataBaseHandler db = DataBaseHandler.Initialize(dbConnectionString)) {
-
-                logger.log("Recreating Tables...");
-                db.recreate();
-
-                Thread tcpServer = new Thread(new TCPServer(serverPort), "TCPserver");
-                Thread udpServer = new Thread(new UDPServer(serverPort), "UPDserver");
-
-                logger.log("Starting TCP Server...");
-                tcpServer.start();
-                logger.log("Starting UPD Server...");
-                udpServer.start();
-
-                tcpServer.join();
-                udpServer.join();
-
-            } catch (Exception ex) {
-                logger.log(ex);
-            }
-
-            logger.log("END");
-
         } catch (IOException e) {
             e.printStackTrace();
         }

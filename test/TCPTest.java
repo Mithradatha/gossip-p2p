@@ -1,12 +1,11 @@
+package test;
+
 import com.cse4232.gossip.helper.asn.Peer;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class TCPTest {
+class TCPTest {
 
     public static void main(String... args) {
         try {

@@ -1,3 +1,5 @@
+package test;
+
 import com.cse4232.gossip.helper.asn.Peer;
 import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.Decoder;
@@ -5,7 +7,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class PeerTest {
+class PeerTest {
 
     private static final int BUFFER_SIZE = 512;
 

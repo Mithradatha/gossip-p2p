@@ -3,6 +3,10 @@ package com.cse4232.gossip.helper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.sql.Timestamp;
 
 public class Logger implements AutoCloseable {
@@ -33,7 +37,9 @@ public class Logger implements AutoCloseable {
     }
 
     private FileOutputStream fileOutputStream;
-    private boolean debugMode;
+    private DatagramSocket sock;
+    private SocketAddress address;
+    private final boolean debugMode;
 
     private Logger(String path, boolean append, boolean debug) throws IOException {
 
@@ -46,6 +52,8 @@ public class Logger implements AutoCloseable {
         boolean isNew = logFile.createNewFile();
 
         this.fileOutputStream = new FileOutputStream(logFile, append);
+        this.sock = new DatagramSocket(2344);
+        this.address = new InetSocketAddress("localhost", 2346);
     }
 
     @Override
@@ -95,6 +103,11 @@ public class Logger implements AutoCloseable {
                     direction,
                     str);
             fileOutputStream.write(string.getBytes());
+            if (unit.equals(SERVER)) {
+                byte[] out = string.getBytes("UTF-8");
+                DatagramPacket packet = new DatagramPacket(out, out.length, address);
+                sock.send(packet);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

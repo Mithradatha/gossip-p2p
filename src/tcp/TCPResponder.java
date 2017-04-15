@@ -15,12 +15,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-public class TCPResponder implements Runnable {
+class TCPResponder implements Runnable {
 
     private static final int BUFFER_SIZE = 512;
     private static final int TIME_OUT = 20*1000;
 
-    private Socket sock;
+    private final Socket sock;
     private InputStream is;
     private OutputStream os;
 

@@ -10,22 +10,18 @@ import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Calendar;
-import java.util.concurrent.ExecutionException;
 
 public class UDPClient implements GossipClient {
 
     private static final int PACKET_SIZE = 512;
 
-    private static int portCount = 2345;
+    private static int portCount = 2346;
 
     private DatagramSocket udpSocket;
     private SocketAddress address;
@@ -36,12 +32,14 @@ public class UDPClient implements GossipClient {
     private Logger log;
 
 
-    public UDPClient(String host, int port) throws SocketException {
+    public UDPClient(String host, int port) throws Exception {
         this.udpSocket = new DatagramSocket(new InetSocketAddress("localhost", ++portCount));
         this.address = new InetSocketAddress(host, port);
         this.host = host;
         this.port = port;
         this.log = Logger.getInstance();
+
+        if (log == null) log = Logger.Initialize("src/client.log", false, true);
 
         log.log(Logger.UDP, Logger.CLIENT, Logger.WARN, String.format("Sending to %s:%d", host, port));
     }

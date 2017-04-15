@@ -7,11 +7,13 @@ import com.cse4232.gossip.udp.UDPClient;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 
-public class Client implements Runnable {
+class Client implements Runnable {
 
     private static final int STATUS_TIMER = 5000;
     private static final String TITLE_ICON = "img/title.png";
@@ -38,8 +40,8 @@ public class Client implements Runnable {
     private JLabel connectionMessage;
     private JLabel statusMessage;
 
-    private Logger log;
-    private GossipClient client;
+    private final Logger log;
+    private final GossipClient client;
 
     public Client(GossipClient client) {
         this.client = client;
@@ -66,6 +68,7 @@ public class Client implements Runnable {
                         try {
 
                             Peer[] peers = get();
+                            //noinspection unchecked
                             peersList.setListData(peers);
                             statusMessage.setText("Synchronized Peers");
                             timer.start();
@@ -121,9 +124,10 @@ public class Client implements Runnable {
 
         boolean isTcp = false;
         boolean isUdp = false;
+        boolean isInteractive = false;
 
-        GetOpt g = new GetOpt(args, "s:p:TU");
-        int ch = -1;
+        GetOpt g = new GetOpt(args, "s:p:ITU");
+        int ch;
         try {
             while ((ch = g.getNextOption()) != -1) {
                 switch (ch) {
@@ -132,6 +136,9 @@ public class Client implements Runnable {
                         break;
                     case 'p':
                         port = Integer.parseInt(g.getOptionArg());
+                        break;
+                    case 'I':
+                        isInteractive = true;
                         break;
                     case 'T':
                         isTcp = true;
@@ -144,8 +151,59 @@ public class Client implements Runnable {
                 }
             }
 
-            GossipClient gossipClient = isTcp? new TCPClient(host, port) : new UDPClient(host, port);
-            new Client(gossipClient).run();
+            if (isTcp == isUdp) throw new Exception("one or the other...");
+
+            GossipClient gossipClient = isTcp ? new TCPClient(host, port) : new UDPClient(host, port);
+
+            if (isInteractive) new Client(gossipClient).run();
+            else {
+
+                final String[] menu = new String[]{ "1. Send Gossip", "2. Send Peer", "3. Get Peers", "4. Exit" };
+                final String symbol = ">> ";
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+
+                    String input;
+                    do {
+                        Arrays.stream(menu).forEach(System.out::println);
+                        System.out.println();
+                        System.out.print(symbol);
+                        input = reader.readLine();
+                        System.out.println();
+
+                        switch(input) {
+                            case "1":
+                                System.out.print("Message: ");
+                                String message = reader.readLine();
+                                System.out.println();
+                                gossipClient.sendGossip(message);
+                                break;
+                            case "2":
+                                System.out.print("Name: ");
+                                String name = reader.readLine();
+                                System.out.println();
+                                System.out.print("IP: ");
+                                String ip = reader.readLine();
+                                System.out.println();
+                                System.out.print("Port: ");
+                                String portnum = reader.readLine();
+                                System.out.println();
+                                gossipClient.sendPeer(name, ip, portnum);
+                                break;
+                            case "3":
+                                Peer[] peers = gossipClient.getPeers();
+                                Arrays.stream(peers).forEach(System.out::println);
+                                System.out.println();
+                                break;
+                            case "4": break;
+                            default:
+                                System.out.println("Enter a number in the range [1, 4]");
+                                System.out.println();
+                        }
+
+                    } while (!input.equals("4"));
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

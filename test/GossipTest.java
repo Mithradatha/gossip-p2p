@@ -1,5 +1,6 @@
+package test;
+
 import com.cse4232.gossip.helper.asn.Gossip;
-import com.cse4232.gossip.helper.asn.Peer;
 import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.Decoder;
 
@@ -11,7 +12,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class GossipTest {
+class GossipTest {
 
     private static final int BUFFER_SIZE = 512;
 

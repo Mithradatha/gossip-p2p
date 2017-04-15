@@ -5,17 +5,17 @@ import com.cse4232.gossip.helper.asn.Peer;
 
 public interface GossipClient {
 
-    public void sendGossip(String message) throws Exception;
+    void sendGossip(String message) throws Exception;
 
-    public void sendPeer(String name, String ip, String port) throws Exception;
+    void sendPeer(String name, String ip, String port) throws Exception;
 
-    public Peer[] getPeers() throws Exception;
+    Peer[] getPeers() throws Exception;
 
-    public String getHost();
+    String getHost();
 
-    public int getPort();
+    int getPort();
 
-    public String getType();
+    String getType();
 
-    public void close();
+    void close();
 }

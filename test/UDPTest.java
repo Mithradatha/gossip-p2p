@@ -1,23 +1,18 @@
+package test;
+
 import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
-import com.cse4232.gossip.helper.asn.PeersAnswer;
 import com.cse4232.gossip.helper.asn.PeersQuery;
-import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
-import net.ddp2p.ASN1.Decoder;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.security.MessageDigest;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
-public class UDPTest {
+class UDPTest {
 
     public static void main(String... args) {
         try {

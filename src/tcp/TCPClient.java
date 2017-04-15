@@ -6,29 +6,18 @@ import com.cse4232.gossip.helper.asn.Gossip;
 import com.cse4232.gossip.helper.asn.Peer;
 import com.cse4232.gossip.helper.asn.PeersAnswer;
 import com.cse4232.gossip.helper.asn.PeersQuery;
-import com.cse4232.gossip.newio.Client;
-import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
-import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOptsException;
-import jdk.internal.util.xml.impl.Input;
 import net.ddp2p.ASN1.ASN1DecoderFail;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
-import sun.rmi.runtime.Log;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
-import java.util.concurrent.ExecutionException;
 
 public class TCPClient implements GossipClient {
 
@@ -50,6 +39,8 @@ public class TCPClient implements GossipClient {
         this.host = host;
         this.port = port;
         this.log = Logger.getInstance();
+
+        if (log == null) log = Logger.Initialize("src/client.log", false, true);
 
         log.log(Logger.TCP, Logger.CLIENT, Logger.WARN, String.format("Connecting to %s:%d", host, port));
     }

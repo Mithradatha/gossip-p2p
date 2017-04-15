@@ -5,8 +5,6 @@ import net.ddp2p.ASN1.ASNObj;
 import net.ddp2p.ASN1.Decoder;
 import net.ddp2p.ASN1.Encoder;
 
-import java.util.Calendar;
-
 // PeersQuery ::= [APPLICATION 3] IMPLICIT NULL
 
 public class PeersQuery extends ASNObj {
