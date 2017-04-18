@@ -13,6 +13,7 @@ import java.math.BigInteger;
 public class Leave extends ASNObj {
 
     private String name;
+    public static final byte TAG = 96;
 
     public Leave(String name)
     {

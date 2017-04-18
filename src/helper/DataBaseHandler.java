@@ -120,6 +120,20 @@ public class DataBaseHandler implements AutoCloseable {
         return result;
     }
 
+    public void removeUser(String name) throws SQLException
+    {
+        String removePeer = "DELETE FROM Peer WHERE Name=?;";
+
+        enterRoom(true);
+            PreparedStatement preparedStatement = connection.prepareStatement(removePeer);
+            preparedStatement.setString(1, name);
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+        leaveRoom(true);
+        Logger.getInstance().log(String.format("Successfully deleted user %s", name));
+    }
+
+
     public Peer[] selectPeers() throws SQLException {
         String selectPeers = "SELECT Name, Port, IP FROM Peer;";
 
