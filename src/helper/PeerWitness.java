@@ -3,9 +3,8 @@ package com.cse4232.gossip.helper;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.Arrays;
 
-public class PeerWitness {
+class PeerWitness {
 
     private static final int PACKET_SIZE = 512;
 

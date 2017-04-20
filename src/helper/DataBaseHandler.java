@@ -100,7 +100,7 @@ public class DataBaseHandler implements AutoCloseable {
         Logger.getInstance().log(String.format("Successfully Inserted Gossip: '%s'", message));
     }
 
-    boolean exists(String sha) throws SQLException {
+    public boolean exists(String sha) throws SQLException {
         String existsGossip = "SELECT COUNT(*) AS 'Exists' FROM Gossip WHERE SHA = ?;";
 
         boolean result = false;

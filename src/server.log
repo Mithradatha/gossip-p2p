@@ -1,22 +1,28 @@
-2017-04-15 18:42:40.502: [nop][driver][warn] Arguments: [-s, localhost, -p, 2345, -d, src/server.db, -T, -m, Hello, -t, 2017-01-09-16-18-20-001Z]
-2017-04-15 18:42:40.509: [nop][driver][warn] Connecting To Database Instance...
-2017-04-15 18:42:41.011: Successfully Connected To Database Instance
-2017-04-15 18:42:41.011: [nop][driver][warn] Recreating Tables...
-2017-04-15 18:42:41.481: Successfully Recreated Tables
-2017-04-15 18:42:41.484: [nop][driver][warn] Starting TCP Server...
-2017-04-15 18:42:41.484: [nop][driver][warn] Starting UPD Server...
-2017-04-15 18:42:41.488: [tcp][client][warn] Connecting to localhost:2345
-2017-04-15 18:42:41.489: [tcp][server][warn] Connected to /127.0.0.1:5059
-2017-04-15 18:42:47.802: [tcp][client][sent] PEERS?\n
-2017-04-15 18:42:47.805: [tcp][server][recv] PEERS?\n
-2017-04-15 18:42:47.807: Successfully Selected Peers
-2017-04-15 18:42:47.808: [tcp][server][sent] PEERS|0|%
-2017-04-15 18:42:47.808: [tcp][client][recv] PEERS|0|%
-2017-04-15 18:42:54.362: [tcp][client][sent] GOSSIP:L7bf10vUvDz/iJnYv5EGtCiy8qLOP20Xlm/8ObkIHF8=:2017-04-15:10h42m54s359Z:message%
-2017-04-15 18:42:54.362: [tcp][server][recv] GOSSIP:L7bf10vUvDz/iJnYv5EGtCiy8qLOP20Xlm/8ObkIHF8=:2017-04-15:10h42m54s359Z:message%
-2017-04-15 18:42:54.48: Successfully Inserted Gossip: 'message'
-2017-04-15 18:43:04.169: [tcp][client][sent] PEER:Sam:PORT=21312:IP=123123%
-2017-04-15 18:43:04.17: [tcp][server][recv] PEER:Sam:PORT=21312:IP=123123%
-2017-04-15 18:43:04.377: Successfully Upserted Peer: Sam - 123123:21312
-2017-04-15 18:43:12.36: [nop][client][warn] Shutting Down... 
-2017-04-15 18:43:12.36: [tcp][server][warn] Socket Closed
+2017-04-19 21:31:06.079: [nop][driver][warn] Arguments: [-s, localhost, -p, 2345, -d, src/server.db, -T, -m, Hello, -t, 2017-01-09-16-18-20-001Z]
+2017-04-19 21:31:06.079: [nop][driver][warn] Connecting To Database Instance...
+2017-04-19 21:31:06.711: Successfully Connected To Database Instance
+2017-04-19 21:31:06.711: [nop][driver][warn] Recreating Tables...
+2017-04-19 21:31:07.296: Successfully Recreated Tables
+2017-04-19 21:31:07.327: [nop][driver][warn] Starting TCP Server...
+2017-04-19 21:31:07.327: [nop][driver][warn] Starting UPD Server...
+2017-04-19 21:31:07.348: [tcp][client][warn] Connecting to localhost:2345
+2017-04-19 21:31:07.349: [tcp][server][warn] Connected to /127.0.0.1:9564
+2017-04-19 21:31:09.787: [tcp][client][sent] PEERS?\n
+2017-04-19 21:31:09.803: [tcp][server][recv] PEERS?\n
+2017-04-19 21:31:09.803: Successfully Selected Peers
+2017-04-19 21:31:09.803: [tcp][server][sent] PEERS|0|%
+2017-04-19 21:31:09.803: [tcp][client][recv] PEERS|0|%
+2017-04-19 21:31:14.285: [tcp][client][sent] GOSSIP:ZXS7/UiguKx568UDTGrSfkei4Q+02VJUWjCw9gKy2kc=:2017-04-20:01h31m14s285Z:message%
+2017-04-19 21:31:14.3: [tcp][server][recv] GOSSIP:ZXS7/UiguKx568UDTGrSfkei4Q+02VJUWjCw9gKy2kc=:2017-04-20:01h31m14s285Z:message%
+2017-04-19 21:31:14.416: Successfully Inserted Gossip: 'message'
+2017-04-19 21:31:18.538: [tcp][client][sent] PEER:dfa:PORT=123:IP=231%
+2017-04-19 21:31:18.538: [tcp][server][recv] PEER:dfa:PORT=123:IP=231%
+2017-04-19 21:31:18.705: Successfully Upserted Peer: dfa - 231:123
+2017-04-19 21:31:19.975: [tcp][client][sent] PEERS?\n
+2017-04-19 21:31:19.975: [tcp][server][recv] PEERS?\n
+2017-04-19 21:31:19.975: Successfully Selected Peers
+2017-04-19 21:31:19.975: [tcp][server][sent] PEERS|1|dfa:PORT=123:IP=231|%
+2017-04-19 21:31:19.975: [tcp][client][recv] PEERS|1|dfa:PORT=123:IP=231|%
+2017-04-19 21:31:39.982: [tcp][server][warn] Read timed out
+2017-04-19 21:31:39.982: [tcp][server][warn] Socket Closed
+2017-04-19 21:32:00.728: [nop][client][warn] Shutting Down... 

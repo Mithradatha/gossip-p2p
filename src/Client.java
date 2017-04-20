@@ -2,8 +2,6 @@ package com.cse4232.gossip;
 
 import com.cse4232.gossip.helper.Logger;
 import com.cse4232.gossip.helper.asn.Peer;
-import com.cse4232.gossip.tcp.TCPClient;
-import com.cse4232.gossip.udp.UDPClient;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
 
 import javax.swing.*;
@@ -153,7 +151,9 @@ class Client implements Runnable {
 
             if (isTcp == isUdp) throw new Exception("one or the other...");
 
-            GossipClient gossipClient = isTcp ? new TCPClient(host, port) : new UDPClient(host, port);
+            int type = (isTcp) ? GossipClient.TCP : GossipClient.UDP;
+
+            GossipClient gossipClient = GossipClientFactory.makeClient(host, port, type);
 
             if (isInteractive) new Client(gossipClient).run();
             else {

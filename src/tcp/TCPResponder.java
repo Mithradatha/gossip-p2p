@@ -1,5 +1,6 @@
 package com.cse4232.gossip.tcp;
 
+import com.cse4232.gossip.Broadcaster;
 import com.cse4232.gossip.helper.DataBaseHandler;
 import com.cse4232.gossip.helper.Logger;
 import com.cse4232.gossip.helper.asn.Gossip;
@@ -12,6 +13,8 @@ import net.ddp2p.ASN1.Decoder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -62,7 +65,15 @@ class TCPResponder implements Runnable {
                             String hash = gossip.getSha256hash();
                             String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
                             String message = gossip.getMessage();
-                            db.insertGossip(hash, dt, message);
+                            if (db.exists(hash)) System.err.println("DISCARDED");
+                            else {
+
+                                db.insertGossip(hash, dt, message);
+                                Peer[] peers = db.selectPeers();
+                                DatagramSocket sock = new DatagramSocket(new InetSocketAddress("localhost", 2567));
+                                Broadcaster broadcaster = new Broadcaster(sock);
+                                broadcaster.broadcast(peers, gossip);
+                            }
                             break;
 
                         case Peer.TAG:
@@ -72,6 +83,7 @@ class TCPResponder implements Runnable {
                             String name = peer.getName();
                             String ip = peer.getIp();
                             String port = Integer.toString(peer.getPort());
+
                             db.insertPeer(name, port, ip);
                             break;
 

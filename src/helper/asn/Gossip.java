@@ -41,7 +41,7 @@ public class Gossip extends ASNObj {
         if (timestamp != null)
             e.addToSequence(new Encoder(Encoder.getGeneralizedTime(timestamp), Encoder.TAG_GeneralizedTime));
         e.addToSequence(new Encoder(message, Encoder.TAG_UTF8String));
-        e.setASN1Type(TAG_AP1);
+        e.setExplicitASN1Tag(TAG_AP1);
         return e;
     }
 

@@ -1,5 +1,6 @@
 package com.cse4232.gossip.udp;
 
+import com.cse4232.gossip.Broadcaster;
 import com.cse4232.gossip.helper.DataBaseHandler;
 import com.cse4232.gossip.helper.Logger;
 import com.cse4232.gossip.helper.asn.Gossip;
@@ -11,6 +12,7 @@ import net.ddp2p.ASN1.Decoder;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 
 class UDPResponder implements Runnable {
 
@@ -46,7 +48,15 @@ class UDPResponder implements Runnable {
                     String hash = gossip.getSha256hash();
                     String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
                     String message = gossip.getMessage();
-                    db.insertGossip(hash, dt, message);
+                    if (db.exists(hash)) System.err.println("DISCARDED");
+                    else {
+
+                        db.insertGossip(hash, dt, message);
+                        Peer[] peers = db.selectPeers();
+                        DatagramSocket sock = new DatagramSocket(new InetSocketAddress("localhost", 2567));
+                        Broadcaster broadcaster = new Broadcaster(sock);
+                        broadcaster.broadcast(peers, gossip);
+                    }
                     break;
 
                 case Peer.TAG:
