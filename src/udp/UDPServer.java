@@ -31,7 +31,7 @@ public class UDPServer implements Runnable, AutoCloseable {
 
                 DatagramPacket packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
                 udpServer.receive(packet);
-                new Thread(new UDPResponder(udpServer, packet)).start();
+                new Thread(new UDPResponder(packet)).start();
                 log.log(Logger.UDP, Logger.SERVER, Logger.WARN, String.format("Received from %s", packet.getSocketAddress()));
 
             } catch (IOException e) {

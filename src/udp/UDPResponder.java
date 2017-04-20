@@ -12,9 +12,11 @@ import net.ddp2p.ASN1.Decoder;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 class UDPResponder implements Runnable {
+
+    private int port = 2349;
 
     private final DatagramSocket udpSocket;
     private final DatagramPacket packet;
@@ -22,8 +24,9 @@ class UDPResponder implements Runnable {
     private final Logger log;
     private final DataBaseHandler db;
 
-    public UDPResponder(DatagramSocket udpSocket, DatagramPacket packet) {
-        this.udpSocket = udpSocket;
+    public UDPResponder(DatagramPacket packet) throws SocketException {
+        //this.udpSocket = new DatagramSocket(new InetSocketAddress("localhost", PortFinder.find()));
+        this.udpSocket = new DatagramSocket();
         this.packet = packet;
         this.log = Logger.getInstance();
         this.db = DataBaseHandler.getInstance();
@@ -39,52 +42,47 @@ class UDPResponder implements Runnable {
 
         try {
 
-            switch(type) {
+            if (type == Gossip.TAG) {
+                Gossip gossip = new Gossip();
+                gossip.decode(decoder);
+                log.log(Logger.UDP, Logger.SERVER, Logger.RECV, gossip.toString());
+                String hash = gossip.getSha256hash();
+                String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
+                String message = gossip.getMessage();
+                if (db.exists(hash)) System.err.println("DISCARDED");
+                else {
 
-                case Gossip.TAG:
-                    Gossip gossip = new Gossip();
-                    gossip.decode(decoder);
-                    log.log(Logger.UDP, Logger.SERVER, Logger.RECV, gossip.toString());
-                    String hash = gossip.getSha256hash();
-                    String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
-                    String message = gossip.getMessage();
-                    if (db.exists(hash)) System.err.println("DISCARDED");
-                    else {
-
-                        db.insertGossip(hash, dt, message);
-                        Peer[] peers = db.selectPeers();
-                        DatagramSocket sock = new DatagramSocket(new InetSocketAddress("localhost", 2567));
-                        Broadcaster broadcaster = new Broadcaster(sock);
-                        broadcaster.broadcast(peers, gossip);
-                    }
-                    break;
-
-                case Peer.TAG:
-                    Peer peer = new Peer();
-                    peer.decode(decoder);
-                    log.log(Logger.UDP, Logger.SERVER, Logger.RECV, peer.toString());
-                    String name = peer.getName();
-                    String ip = peer.getIp();
-                    String port = Integer.toString(peer.getPort());
-                    db.insertPeer(name, port, ip);
-                    break;
-
-                case PeersQuery.TAG:
-                    PeersQuery peersQuery = new PeersQuery();
-                    log.log(Logger.UDP, Logger.SERVER, Logger.RECV, peersQuery.toString());
-
+                    db.insertGossip(hash, dt, message);
                     Peer[] peers = db.selectPeers();
-                    PeersAnswer peersAnswer = new PeersAnswer(peers);
-                    log.log(Logger.UDP, Logger.SERVER, Logger.SENT, peersAnswer.toString());
+                    DatagramSocket sock = new DatagramSocket();
+                    Broadcaster broadcaster = new Broadcaster(sock);
+                    broadcaster.broadcast(peers, gossip);
+                }
 
-                    byte[] out = peersAnswer.encode();
-                    DatagramPacket datagramPacket = new DatagramPacket(out, out.length, packet.getSocketAddress());
-                    udpSocket.send(datagramPacket);
-                    break;
+            } else if (type == Peer.TAG) {
+                Peer peer = new Peer();
+                peer.decode(decoder);
+                log.log(Logger.UDP, Logger.SERVER, Logger.RECV, peer.toString());
+                String name = peer.getName();
+                String ip = peer.getIp();
+                String port = Integer.toString(peer.getPort());
+                db.insertPeer(name, port, ip);
 
-                default:
-                    log.log("Incorrect Data Tag");
-                    System.exit(1);
+            } else if (type == PeersQuery.TAG) {
+                PeersQuery peersQuery = new PeersQuery();
+                log.log(Logger.UDP, Logger.SERVER, Logger.RECV, peersQuery.toString());
+
+                Peer[] peers = db.selectPeers();
+                PeersAnswer peersAnswer = new PeersAnswer(peers);
+                log.log(Logger.UDP, Logger.SERVER, Logger.SENT, peersAnswer.toString());
+
+                byte[] out = peersAnswer.encode();
+                DatagramPacket datagramPacket = new DatagramPacket(out, out.length, packet.getSocketAddress());
+                udpSocket.send(datagramPacket);
+
+            } else {
+                log.log(String.format("Incorrect Data Tag %s", type));
+                System.exit(1);
             }
 
         } catch (Exception e) {

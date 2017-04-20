@@ -6,8 +6,7 @@ import net.ddp2p.ASN1.*;
 
 public class Peer extends ASNObj {
 
-    private static final byte TAG_AP2 = Encoder.buildASN1byteType(Encoder.CLASS_APPLICATION, Encoder.PC_CONSTRUCTED, (byte) 2);
-    public static final byte TAG = 98;
+    public static final byte TAG = Encoder.buildASN1byteType(Encoder.CLASS_APPLICATION, Encoder.PC_CONSTRUCTED, (byte) 2);
 
     private String name;
     private int port;
@@ -37,7 +36,7 @@ public class Peer extends ASNObj {
         e.addToSequence(new Encoder(name, Encoder.TAG_UTF8String));
         e.addToSequence(new Encoder(port));
         e.addToSequence(new Encoder(ip, Encoder.TAG_PrintableString));
-        e.setASN1Type(TAG_AP2);
+        e.setASN1Type(TAG);
         return e;
     }
 

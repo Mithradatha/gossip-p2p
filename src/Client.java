@@ -38,12 +38,12 @@ class Client implements Runnable {
     private JLabel connectionMessage;
     private JLabel statusMessage;
 
-    private final Logger log;
+   // private final Logger log;
     private final GossipClient client;
 
     public Client(GossipClient client) {
         this.client = client;
-        this.log = Logger.getInstance();
+       // this.log = Logger.getInstance();
 
         String host = client.getHost();
         int port = client.getPort();
@@ -228,12 +228,12 @@ class Client implements Runnable {
             frame.pack();
             frame.setVisible(true);
         } catch (Exception e) {
-            log.log(e);
+           // log.log(e);
         }
     }
 
     private void shutdown(Exception e) {
-        log.log(Logger.NOP, Logger.CLIENT, Logger.WARN, String.format("Shutting Down... %s", e.getLocalizedMessage()));
+       // log.log(Logger.NOP, Logger.CLIENT, Logger.WARN, String.format("Shutting Down... %s", e.getLocalizedMessage()));
         client.close();
         System.exit(1);
     }

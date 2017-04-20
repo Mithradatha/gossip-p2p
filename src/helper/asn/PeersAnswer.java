@@ -1,13 +1,13 @@
 package com.cse4232.gossip.helper.asn;
 
+import com.cse4232.gossip.helper.Logger;
 import net.ddp2p.ASN1.*;
 
 // PeersAnswer ::= [1] EXPLICIT SEQUENCE OF Peer
 
 public class PeersAnswer extends ASNObj {
 
-    private final static byte TAG_CS1 = Encoder.buildASN1byteType(Encoder.TAG_SEQUENCE, Encoder.PC_CONSTRUCTED, (byte) 1);
-    public static final byte TAG = 33;
+    public final static byte TAG = Encoder.buildASN1byteType(Encoder.CLASS_CONTEXT, Encoder.PC_CONSTRUCTED, (byte) 1);
 
     private Peer[] peers;
 
@@ -21,14 +21,14 @@ public class PeersAnswer extends ASNObj {
 
     @Override
     public Encoder getEncoder() {
-        return new Encoder().initSequence().addToSequence(Encoder.getEncoder(peers)).setASN1Type(TAG_CS1);
+        Encoder e = Encoder.getEncoder(peers);
+        e.setASN1Type(TAG);
+        return e;
     }
 
     @Override
     public Object decode(Decoder decoder) throws ASN1DecoderFail {
-        Decoder d = decoder.getContent();
-        peers = d.getFirstObject(true).getSequenceOf(Peer.TAG, new Peer[0], new Peer());
-        if (d.getTypeByte() != 0) throw new ASN1DecoderFail("Wrong Decoder");
+        peers = decoder.getSequenceOf(Peer.TAG, new Peer[0], new Peer());
         return this;
     }
 

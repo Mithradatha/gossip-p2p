@@ -7,19 +7,20 @@ import net.ddp2p.ASN1.Encoder;
 
 import java.math.BigInteger;
 
-/**
- * Created by Nemahs on 4/18/2017.
- */
+// Leave ::= [APPLICATION 4] EXPLICIT SEQUENCE {name UTF8String}
+
 public class Leave extends ASNObj {
 
+    public static final byte TAG = Encoder.buildASN1byteType(Encoder.CLASS_APPLICATION, Encoder.PC_CONSTRUCTED, (byte) 4);
+
     private String name;
-    public static final byte TAG = 96;
 
     public Leave(String name)
     {
         this.name = name;
     }
 
+    public Leave() {}
 
     public String getName() {return name;}
 
@@ -28,13 +29,15 @@ public class Leave extends ASNObj {
     public Encoder getEncoder() {
         Encoder e = new Encoder().initSequence();
         e.addToSequence(new Encoder(name, Encoder.TAG_UTF8String));
-        e.setExplicitASN1Tag((int)Encoder.CLASS_APPLICATION, (int)Encoder.PC_CONSTRUCTED, BigInteger.valueOf(4));
-        return e;
+        Encoder wrapper = new Encoder().initSequence();
+        wrapper.addToSequence(e);
+        wrapper.setASN1Type(TAG);
+        return wrapper;
     }
 
     @Override
     public Object decode(Decoder decoder) throws ASN1DecoderFail {
-        Decoder d = decoder.getContent();
+        Decoder d = decoder.getContent().getContent();
         name = d.getFirstObject(true).getString();
         return this;
     }

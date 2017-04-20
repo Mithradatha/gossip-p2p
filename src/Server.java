@@ -66,8 +66,6 @@ class Server {
                     log.log(Logger.NOP, Logger.DRIVER, Logger.WARN,"Starting UPD Server...");
                     udpServer.start();
 
-                    if (!host.isEmpty() && witness != -1) {}
-
                     tcpServer.join();
                     udpServer.join();
 

@@ -21,8 +21,6 @@ public class UDPClient implements GossipClient {
 
     private static final int PACKET_SIZE = 512;
 
-    private static int portCount = 2346;
-
     private DatagramSocket udpSocket;
     private SocketAddress address;
 
@@ -33,15 +31,15 @@ public class UDPClient implements GossipClient {
 
 
     public UDPClient(String host, int port) throws Exception {
-        this.udpSocket = new DatagramSocket(new InetSocketAddress("localhost", ++portCount));
-        this.address = new InetSocketAddress(host, port);
+        this.udpSocket = new DatagramSocket();
         this.host = host;
         this.port = port;
-        this.log = Logger.getInstance();
+        this.address = new InetSocketAddress(host, port);
+       // this.log = Logger.getInstance();
 
-        if (log == null) log = Logger.Initialize("src/client.log", false, true);
+        //if (log == null) log = Logger.Initialize("src/client.log", false, true);
 
-        log.log(Logger.UDP, Logger.CLIENT, Logger.WARN, String.format("Sending to %s:%d", host, port));
+//        log.log(Logger.UDP, Logger.CLIENT, Logger.WARN, String.format("Sending to %s:%d", host, port));
     }
 
     public void sendGossip(String message) throws NoSuchAlgorithmException, IOException {
@@ -59,7 +57,7 @@ public class UDPClient implements GossipClient {
         DatagramPacket packet = new DatagramPacket(out, out.length, address);
         udpSocket.send(packet);
 
-        log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, gossip.toString());
+      //  log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, gossip.toString());
     }
 
     public void sendPeer(String name, String ip, String port) throws IOException {
@@ -70,7 +68,7 @@ public class UDPClient implements GossipClient {
         DatagramPacket packet = new DatagramPacket(out, out.length, address);
         udpSocket.send(packet);
 
-        log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peer.toString());
+       // log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peer.toString());
     }
 
     public Peer[] getPeers() throws IOException, ASN1DecoderFail {
@@ -81,21 +79,20 @@ public class UDPClient implements GossipClient {
         DatagramPacket sendPacket = new DatagramPacket(out, out.length, address);
         udpSocket.send(sendPacket);
 
-        log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peersQuery.toString());
+      //  log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peersQuery.toString());
 
-        byte[] in = new byte[PACKET_SIZE];
-        DatagramPacket receivePacket = new DatagramPacket(in, PACKET_SIZE);
+        DatagramPacket receivePacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
         udpSocket.receive(receivePacket);
 
-        Decoder decoder = new Decoder(in);
+        Decoder decoder = new Decoder(receivePacket.getData());
         if (decoder.getTypeByte() != PeersAnswer.TAG) {
-            log.log("Wrong Tag");
+           // log.log("Wrong Tag");
         }
 
         PeersAnswer peersAnswer = new PeersAnswer();
         peersAnswer.decode(decoder);
 
-        log.log(Logger.UDP, Logger.CLIENT, Logger.RECV, peersAnswer.toString());
+        //log.log(Logger.UDP, Logger.CLIENT, Logger.RECV, peersAnswer.toString());
 
         return peersAnswer.getPeers();
     }

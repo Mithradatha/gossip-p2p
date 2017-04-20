@@ -53,59 +53,54 @@ class TCPResponder implements Runnable {
 
                     byte type = decoder.getTypeByte();
 
-                    switch (type) {
+                    if (type == Gossip.TAG) {
+                        Gossip gossip = new Gossip();
+                        gossip.decode(decoder);
+                        log.log(Logger.TCP, Logger.SERVER, Logger.RECV, gossip.toString());
+                        String hash = gossip.getSha256hash();
+                        String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
+                        String message = gossip.getMessage();
+                        if (db.exists(hash)) System.err.println("DISCARDED");
+                        else {
 
-                        case Gossip.TAG:
-                            Gossip gossip = new Gossip();
-                            gossip.decode(decoder);
-                            log.log(Logger.TCP, Logger.SERVER, Logger.RECV, gossip.toString());
-                            String hash = gossip.getSha256hash();
-                            String dt = ASN1_Util.getStringDate(gossip.getTimestamp());
-                            String message = gossip.getMessage();
-                            if (db.exists(hash)) System.err.println("DISCARDED");
-                            else {
-
-                                db.insertGossip(hash, dt, message);
-                                Peer[] peers = db.selectPeers();
-                                DatagramSocket sock = new DatagramSocket(new InetSocketAddress("localhost", 2567));
-                                Broadcaster broadcaster = new Broadcaster(sock);
-                                broadcaster.broadcast(peers, gossip);
-                            }
-                            break;
-
-                        case Peer.TAG:
-                            Peer peer = new Peer();
-                            peer.decode(decoder);
-                            log.log(Logger.TCP, Logger.SERVER, Logger.RECV, peer.toString());
-                            String name = peer.getName();
-                            String ip = peer.getIp();
-                            String port = Integer.toString(peer.getPort());
-
-                            db.insertPeer(name, port, ip);
-                            break;
-
-                        case PeersQuery.TAG:
-                            PeersQuery peersQuery = new PeersQuery();
-                            log.log(Logger.TCP, Logger.SERVER, Logger.RECV, peersQuery.toString());
-
+                            db.insertGossip(hash, dt, message);
                             Peer[] peers = db.selectPeers();
+                            DatagramSocket sock = new DatagramSocket();
+                            Broadcaster broadcaster = new Broadcaster(sock);
+                            broadcaster.broadcast(peers, gossip);
+                        }
 
-                            PeersAnswer peersAnswer = new PeersAnswer(peers);
-                            log.log(Logger.TCP, Logger.SERVER, Logger.SENT, peersAnswer.toString());
+                    } else if (type == Peer.TAG) {
+                        Peer peer = new Peer();
+                        peer.decode(decoder);
+                        log.log(Logger.TCP, Logger.SERVER, Logger.RECV, peer.toString());
+                        String name = peer.getName();
+                        String ip = peer.getIp();
+                        String port = Integer.toString(peer.getPort());
 
-                            byte[] out = peersAnswer.encode();
-                            os.write(out);
-                            os.flush();
-                            break;
+                        db.insertPeer(name, port, ip);
 
-                        case Leave.TAG:
-                            Leave leave = new Leave();
-                            leave.decode(decoder);
-                            String user = leave.getName();
-                            db.removeUser(user);
-                            break;
-                        default:
-                            log.log("Incorrect Data Tag");
+                    } else if (type == PeersQuery.TAG) {
+                        PeersQuery peersQuery = new PeersQuery();
+                        log.log(Logger.TCP, Logger.SERVER, Logger.RECV, peersQuery.toString());
+
+                        Peer[] peers = db.selectPeers();
+
+                        PeersAnswer peersAnswer = new PeersAnswer(peers);
+                        log.log(Logger.TCP, Logger.SERVER, Logger.SENT, peersAnswer.toString());
+
+                        byte[] out = peersAnswer.encode();
+                        os.write(out);
+                        os.flush();
+
+                    } else if (type == Leave.TAG) {
+                        Leave leave = new Leave();
+                        leave.decode(decoder);
+                        String user = leave.getName();
+                        db.removeUser(user);
+
+                    } else {
+                        log.log(String.format("Incorrect Data Tag %s", type));
                     }
                 }
             } catch (SocketTimeoutException e) {
