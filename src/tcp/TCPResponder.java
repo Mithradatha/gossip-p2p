@@ -3,10 +3,7 @@ package com.cse4232.gossip.tcp;
 import com.cse4232.gossip.Broadcaster;
 import com.cse4232.gossip.helper.DataBaseHandler;
 import com.cse4232.gossip.helper.Logger;
-import com.cse4232.gossip.helper.asn.Gossip;
-import com.cse4232.gossip.helper.asn.Peer;
-import com.cse4232.gossip.helper.asn.PeersAnswer;
-import com.cse4232.gossip.helper.asn.PeersQuery;
+import com.cse4232.gossip.helper.asn.*;
 import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
@@ -101,6 +98,12 @@ class TCPResponder implements Runnable {
                             os.flush();
                             break;
 
+                        case Leave.TAG:
+                            Leave leave = new Leave();
+                            leave.decode(decoder);
+                            String user = leave.getName();
+                            db.removeUser(user);
+                            break;
                         default:
                             log.log("Incorrect Data Tag");
                     }
