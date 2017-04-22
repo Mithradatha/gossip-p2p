@@ -1,6 +1,6 @@
-package com.cse4232.gossip.helper;
+package edu.cse4232.gossip.helper;
 
-import com.cse4232.gossip.helper.asn.Peer;
+import edu.cse4232.gossip.asn1.Peer;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -109,8 +109,10 @@ public class DataBaseHandler implements AutoCloseable {
             preparedStatement.setString(1, sha);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                if (resultSet.getInt("Exists") > 0) {
+                int occurances = resultSet.getInt("Exists");
+                if (occurances > 0) {
                     result = true;
+                    Logger.getInstance().log("Duplicate Gossp: " + sha);
                 }
             }
 

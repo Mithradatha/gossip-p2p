@@ -1,4 +1,4 @@
-package com.cse4232.gossip.helper;
+package edu.cse4232.gossip.helper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 public class Logger implements AutoCloseable {
 
     public final static String SERVER = "server";
-    public final static String CLIENT = "client";
+    // --Commented out by Inspection (4/22/2017 2:06 PM):public final static String CLIENT = "client";
     public final static String DRIVER = "driver";
 
     public final static String UDP = "udp";
@@ -25,9 +25,9 @@ public class Logger implements AutoCloseable {
 
     private static Logger instance;
 
-    public static Logger Initialize(String path, boolean append, boolean debug) throws IOException {
+    public static Logger Initialize() throws IOException {
         if (instance == null) {
-            instance = new Logger(path, append, debug);
+            instance = new Logger(edu.cse4232.gossip.server.Server.LOG_PATH, edu.cse4232.gossip.server.Server.APPEND, edu.cse4232.gossip.server.Server.DEBUG_MODE);
         }
         return instance;
     }
@@ -37,8 +37,8 @@ public class Logger implements AutoCloseable {
     }
 
     private FileOutputStream fileOutputStream;
-    private DatagramSocket sock;
-    private SocketAddress address;
+    //private DatagramSocket sock;
+    //private SocketAddress address;
     private final boolean debugMode;
 
     private Logger(String path, boolean append, boolean debug) throws IOException {
@@ -52,8 +52,8 @@ public class Logger implements AutoCloseable {
         boolean isNew = logFile.createNewFile();
 
         this.fileOutputStream = new FileOutputStream(logFile, append);
-        this.sock = new DatagramSocket(2344);
-        this.address = new InetSocketAddress("localhost", 2346);
+        //this.sock = new DatagramSocket(2344);
+        //this.address = new InetSocketAddress("localhost", 2346);
     }
 
     @Override
@@ -103,11 +103,11 @@ public class Logger implements AutoCloseable {
                     direction,
                     str);
             fileOutputStream.write(string.getBytes());
-            if (unit.equals(SERVER)) {
+           /* if (unit.equals(SERVER)) {
                 byte[] out = string.getBytes("UTF-8");
                 DatagramPacket packet = new DatagramPacket(out, out.length, address);
                 sock.send(packet);
-            }
+            }*/
         } catch (IOException e) {
             e.printStackTrace();
         }
