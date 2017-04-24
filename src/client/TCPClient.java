@@ -17,9 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Calendar;
 
-public class TCPClient implements GossipClient {
-
-    private static final int BUFFER_SIZE = 512;
+public class TCPClient extends GossipClient {
 
     private Socket sock;
     private InputStream is;
@@ -28,7 +26,7 @@ public class TCPClient implements GossipClient {
     private String host;
     private int port;
 
-    // --Commented out by Inspection (4/22/2017 2:06 PM):private Logger log;
+    // private Logger log;
 
     public TCPClient(String host, int port) throws IOException {
         this.sock = new Socket(host, port);
@@ -43,6 +41,11 @@ public class TCPClient implements GossipClient {
         //log.log(Logger.TCP, Logger.CLIENT, Logger.WARN, String.format("Connecting to %s:%d", host, port));
     }
 
+    /**
+     * @param message
+     * @throws NoSuchAlgorithmException SHA-256
+     * @throws IOException Socket Write
+     */
     public void sendGossip(String message) throws NoSuchAlgorithmException, IOException {
 
         Calendar timestamp = ASN1_Util.CalendargetInstance();
@@ -50,9 +53,9 @@ public class TCPClient implements GossipClient {
 
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         byte[] digest = messageDigest.digest(fullMessage.getBytes());
-        String hash = Base64.getEncoder().encodeToString(digest);
+        //String hash = Base64.getEncoder().encodeToString(digest);
 
-        Gossip gossip = new Gossip(hash, timestamp, message);
+        Gossip gossip = new Gossip(digest, timestamp, message);
         byte[] out = gossip.encode();
 
         os.write(out);
@@ -61,6 +64,12 @@ public class TCPClient implements GossipClient {
         //log.log(Logger.TCP, Logger.CLIENT, Logger.SENT, gossip.toString());
     }
 
+    /**
+     * @param name
+     * @param ip
+     * @param port
+     * @throws IOException Socket Write
+     */
     public void sendPeer(String name, String ip, String port) throws IOException {
 
         Peer peer = new Peer(name, Integer.parseInt(port), ip);
@@ -72,6 +81,14 @@ public class TCPClient implements GossipClient {
         //log.log(Logger.TCP, Logger.CLIENT, Logger.SENT, peer.toString());
     }
 
+    /**
+     * Sends PeersQuery Request
+     * Receives PeersAnswer Response
+     * @return Known Peers
+     * @throws IOException Socket Write
+     * @throws ASN1DecoderFail PeersAnswer Decoder
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Peer[] getPeers() throws IOException, ASN1DecoderFail {
 
         PeersQuery peersQuery = new PeersQuery();
@@ -83,13 +100,14 @@ public class TCPClient implements GossipClient {
        // log.log(Logger.TCP, Logger.CLIENT, Logger.SENT, peersQuery.toString());
 
         PeersAnswer peersAnswer = new PeersAnswer();
-        byte[] in = new byte[BUFFER_SIZE];
+        byte[] in = new byte[PACKET_SIZE];
 
         is.read(in, 0, 1);
+        //assert bytesRead == 1;
         byte type = in[0];
-        //assert type == PeersAnswer.TAG;
 
         is.read(in, 1, 1);
+        //assert bytesRead == 1;
         byte len = in[1];
 
         byte[] data = new byte[len];
@@ -119,6 +137,9 @@ public class TCPClient implements GossipClient {
         return "TCP";
     }
 
+    /**
+     * Closes I/O Streams and Socket Connection
+     */
     public void close() {
         try {
             if (is != null) is.close();

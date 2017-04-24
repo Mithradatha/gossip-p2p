@@ -8,12 +8,21 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 
+/**
+ * Used by Server for One-Way Communication with Peers
+ */
 public class Broadcaster {
 
     private final DatagramSocket socket;
 
     public Broadcaster(DatagramSocket socket) { this.socket = socket; }
 
+    /**
+     * Updates Known Peers of New Gossip
+     * @param peers
+     * @param gossip
+     * @throws IOException Socket Send DatagramPacket
+     */
     public void broadcast(Peer[] peers, Gossip gossip) throws IOException {
 
         for (Peer peer : peers) {

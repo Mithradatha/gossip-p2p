@@ -15,6 +15,9 @@ public class Server {
 
     public static final String LOG_PATH = "server.log";
 
+    /**
+     * @param args -p [port] -d [database file]
+     */
     public static void main(String... args) {
 
         int serverPort = -1;

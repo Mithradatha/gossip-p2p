@@ -13,10 +13,17 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 
+/**
+ * Notifies Server of Itself
+ * Receives New Gossip Messages
+ */
 class PeerWitness {
 
     private static final int PACKET_SIZE = 512;
 
+    /**
+     * @param args -h [server ip] -p [server port]
+     */
     public static void main(String... args) {
 
         String serverHost = "";

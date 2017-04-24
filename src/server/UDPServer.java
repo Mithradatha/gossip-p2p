@@ -17,11 +17,19 @@ class UDPServer implements Runnable, AutoCloseable {
         this.log = Logger.getInstance();
     }
 
+    /**
+     * Closes UDP Socket
+     * @throws Exception Socket.close()
+     */
     @Override
     public void close() throws Exception {
         if (udpServer != null) udpServer.close();
     }
 
+    /**
+     * Receives UDP Client Requests
+     * Generates new Thread to Handle Client
+     */
     @Override
     public void run() {
 

@@ -16,11 +16,19 @@ class TCPServer implements Runnable, AutoCloseable {
         this.log = Logger.getInstance();
     }
 
+    /**
+     * Closes TCP Socket
+     * @throws Exception Socket.close()
+     */
     @Override
     public void close() throws Exception {
         if (tcpServer != null) tcpServer.close();
     }
 
+    /**
+     * Accepts TCP Client Requests
+     * Generates new Thread to Handle Client
+     */
     @Override
     public void run() {
 

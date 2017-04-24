@@ -35,6 +35,9 @@ class TCPResponder implements Runnable {
         this.db = DataBaseHandler.getInstance();
     }
 
+    /**
+     * Handles TCP Client Connection
+     */
     @Override
     public void run() {
 

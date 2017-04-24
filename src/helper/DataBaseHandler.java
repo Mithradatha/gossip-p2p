@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+/**
+ * Handles Server Database Connection
+ */
 public class DataBaseHandler implements AutoCloseable {
 
     private static DataBaseHandler instance;
@@ -17,6 +20,12 @@ public class DataBaseHandler implements AutoCloseable {
     private final Semaphore leavestile = new Semaphore(1);
     private int inRoom = 0;
 
+    /**
+     * Connection String is Runtime Information
+     * @param connectionString
+     * @return Singleton Instance
+     * @throws SQLException DriverManager.getConnection()
+     */
     public static DataBaseHandler Initialize(String connectionString) throws SQLException {
         if (instance == null) {
             instance = new DataBaseHandler(connectionString);
@@ -35,11 +44,20 @@ public class DataBaseHandler implements AutoCloseable {
         Logger.getInstance().log("Successfully Connected To Database Instance");
     }
 
+    /**
+     * Closes Database Connection
+     * @throws SQLException Connection.close()
+     */
     @Override
     public void close() throws SQLException {
         connection.close();
     }
 
+    /**
+     * Drops All Tables
+     * Creates All Tables
+     * @throws SQLException Statement.executeUpdate()
+     */
     public void recreate() throws SQLException {
         String dropPeer = "DROP TABLE IF EXISTS Peer;";
         String dropGossip = "DROP TABLE IF EXISTS Gossip;";
@@ -65,6 +83,12 @@ public class DataBaseHandler implements AutoCloseable {
         Logger.getInstance().log("Successfully Recreated Tables");
     }
 
+    /**
+     * @param name
+     * @param port
+     * @param ip
+     * @throws SQLException PreparedStatement.executeUpdate()
+     */
     public void insertPeer(String name, String port, String ip) throws SQLException {
         String insertPeer = "INSERT OR IGNORE INTO Peer (Name, Port, IP) VALUES (?, ?, ?);";
         String updatePeer = "UPDATE Peer SET Port = ?, IP = ? WHERE Name = ?;";
@@ -86,6 +110,12 @@ public class DataBaseHandler implements AutoCloseable {
         Logger.getInstance().log(String.format("Successfully Upserted Peer: %s - %s:%s", name, ip, port));
     }
 
+    /**
+     * @param sha
+     * @param dt
+     * @param message
+     * @throws SQLException PreparedStatement.executeUpdate()
+     */
     public void insertGossip(String sha, String dt, String message) throws SQLException {
         String insertGossip = "INSERT INTO Gossip (SHA, DT, Message) VALUES (?, ?, ?);";
 
@@ -100,6 +130,12 @@ public class DataBaseHandler implements AutoCloseable {
         Logger.getInstance().log(String.format("Successfully Inserted Gossip: '%s'", message));
     }
 
+    /**
+     * Tests for Duplicate Gossip Message
+     * @param sha
+     * @return True if SHA-256 Hash already exists
+     * @throws SQLException PreparedStatement.executeQuery()
+     */
     public boolean exists(String sha) throws SQLException {
         String existsGossip = "SELECT COUNT(*) AS 'Exists' FROM Gossip WHERE SHA = ?;";
 
@@ -122,6 +158,11 @@ public class DataBaseHandler implements AutoCloseable {
         return result;
     }
 
+    /**
+     * Deletes Peer on LEAVE Message
+     * @param name
+     * @throws SQLException PreparedStatement.executeUpdate()
+     */
     public void removeUser(String name) throws SQLException
     {
         String removePeer = "DELETE FROM Peer WHERE Name=?;";
@@ -135,7 +176,10 @@ public class DataBaseHandler implements AutoCloseable {
         Logger.getInstance().log(String.format("Successfully deleted user %s", name));
     }
 
-
+    /**
+     * @return Sequence of Peers Known to Server
+     * @throws SQLException Statement.executeQuery()
+     */
     public Peer[] selectPeers() throws SQLException {
         String selectPeers = "SELECT Name, Port, IP FROM Peer;";
 
@@ -159,7 +203,11 @@ public class DataBaseHandler implements AutoCloseable {
         return peers.toArray(new Peer[0]);
     }
 
-    //Syncro stuff
+    /**
+     * First Writer Locks Room
+     * First Reader Locks Writers
+     * @param writer
+     */
     private void enterRoom(boolean writer)
     {
         try {
@@ -175,6 +223,11 @@ public class DataBaseHandler implements AutoCloseable {
         } catch (InterruptedException ignored) {}
     }
 
+    /**
+     * Writer Unlocks Room
+     * Last Reader Unlocks Room
+     * @param writer
+     */
     private void leaveRoom(boolean writer)
     {
         if (writer)

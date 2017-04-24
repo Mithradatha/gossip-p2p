@@ -15,9 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Calendar;
 
-public class UDPClient implements GossipClient {
-
-    private static final int PACKET_SIZE = 512;
+public class UDPClient extends GossipClient {
 
     private DatagramSocket udpSocket;
     private SocketAddress address;
@@ -25,7 +23,7 @@ public class UDPClient implements GossipClient {
     private String host;
     private int port;
 
-    // --Commented out by Inspection (4/22/2017 2:06 PM):private Logger log;
+    // private Logger log;
 
 
     public UDPClient(String host, int port) throws Exception {
@@ -40,6 +38,11 @@ public class UDPClient implements GossipClient {
 //        log.log(Logger.UDP, Logger.CLIENT, Logger.WARN, String.format("Sending to %s:%d", host, port));
     }
 
+    /**
+     * @param message
+     * @throws NoSuchAlgorithmException SHA-256
+     * @throws IOException Socket Send DatagramPacket
+     */
     public void sendGossip(String message) throws NoSuchAlgorithmException, IOException {
 
         Calendar timestamp = ASN1_Util.CalendargetInstance();
@@ -47,9 +50,9 @@ public class UDPClient implements GossipClient {
 
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         byte[] digest = messageDigest.digest(fullMessage.getBytes());
-        String hash = Base64.getEncoder().encodeToString(digest);
+        //String hash = Base64.getEncoder().encodeToString(digest);
 
-        Gossip gossip = new Gossip(hash, timestamp, message);
+        Gossip gossip = new Gossip(digest, timestamp, message);
         byte[] out = gossip.encode();
 
         DatagramPacket packet = new DatagramPacket(out, out.length, address);
@@ -58,6 +61,12 @@ public class UDPClient implements GossipClient {
       //  log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, gossip.toString());
     }
 
+    /**
+     * @param name
+     * @param ip
+     * @param port
+     * @throws IOException Socket Send DatagramPacket
+     */
     public void sendPeer(String name, String ip, String port) throws IOException {
 
         Peer peer = new Peer(name, Integer.parseInt(port), ip);
@@ -69,6 +78,13 @@ public class UDPClient implements GossipClient {
        // log.log(Logger.UDP, Logger.CLIENT, Logger.SENT, peer.toString());
     }
 
+    /**
+     * Sends PeersQuery Request
+     * Receives PeersAnswer Response
+     * @return Known Peers
+     * @throws IOException Socket Send/Receive DatagramPacket
+     * @throws ASN1DecoderFail PeersAnswer Decoder
+     */
     public Peer[] getPeers() throws IOException, ASN1DecoderFail {
 
         PeersQuery peersQuery = new PeersQuery();
@@ -83,9 +99,9 @@ public class UDPClient implements GossipClient {
         udpSocket.receive(receivePacket);
 
         Decoder decoder = new Decoder(receivePacket.getData());
-        if (decoder.getTypeByte() != PeersAnswer.TAG) {
+        /*if (decoder.getTypeByte() != PeersAnswer.TAG) {
            // log.log("Wrong Tag");
-        }
+        }*/
 
         PeersAnswer peersAnswer = new PeersAnswer();
         peersAnswer.decode(decoder);
@@ -110,6 +126,9 @@ public class UDPClient implements GossipClient {
         return "UDP";
     }
 
+    /**
+     * Closes UDP Socket
+     */
     @Override
     public void close() { udpSocket.close(); }
 

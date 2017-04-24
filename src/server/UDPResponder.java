@@ -16,7 +16,7 @@ import java.net.SocketException;
 
 class UDPResponder implements Runnable {
 
-    // --Commented out by Inspection (4/22/2017 2:06 PM):private int port = 2349;
+    // private int port = 2349;
 
     private final DatagramSocket udpSocket;
     private final DatagramPacket packet;
@@ -32,6 +32,9 @@ class UDPResponder implements Runnable {
         this.db = DataBaseHandler.getInstance();
     }
 
+    /**
+     * Handles UPP Client Packets
+     */
     @Override
     public void run() {
 
