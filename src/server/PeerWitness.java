@@ -3,9 +3,7 @@ package edu.cse4232.gossip.server;
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
 import edu.cse4232.gossip.asn1.Gossip;
 import edu.cse4232.gossip.asn1.Peer;
-import edu.cse4232.gossip.helper.Logger;
 import net.ddp2p.ASN1.ASN1DecoderFail;
-import net.ddp2p.ASN1.ASN1_Util;
 import net.ddp2p.ASN1.Decoder;
 
 import java.io.IOException;

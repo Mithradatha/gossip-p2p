@@ -12,10 +12,12 @@ import java.io.IOException;
 import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Calendar;
 
-public class UDPClient extends GossipClient {
+/**
+ * UDP Client
+ */
+class UDPClient extends GossipClient {
 
     private DatagramSocket udpSocket;
     private SocketAddress address;
@@ -46,7 +48,7 @@ public class UDPClient extends GossipClient {
     public void sendGossip(String message) throws NoSuchAlgorithmException, IOException {
 
         Calendar timestamp = ASN1_Util.CalendargetInstance();
-        String fullMessage = ASN1_Util.getStringDate(timestamp) + ":" + message;
+        String fullMessage = Gossip.timestampToString(timestamp) + ":" + message;
 
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         byte[] digest = messageDigest.digest(fullMessage.getBytes());

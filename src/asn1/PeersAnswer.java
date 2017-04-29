@@ -7,7 +7,7 @@ import net.ddp2p.ASN1.*;
  */
 public class PeersAnswer extends ASNObj {
 
-    public final static byte TAG = Encoder.buildASN1byteType(Encoder.CLASS_CONTEXT, Encoder.PC_CONSTRUCTED, (byte) 1);
+    private final static byte TAG = Encoder.buildASN1byteType(Encoder.CLASS_CONTEXT, Encoder.PC_CONSTRUCTED, (byte) 1);
 
     private Peer[] peers;
 

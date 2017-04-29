@@ -2,8 +2,8 @@ package edu.cse4232.gossip.asn1;
 
 import net.ddp2p.ASN1.*;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Calendar;
 
 /**
@@ -13,11 +13,14 @@ public class Gossip extends ASNObj {
 
     public final static byte TAG = Encoder.buildASN1byteType(Encoder.CLASS_APPLICATION, Encoder.PC_CONSTRUCTED, (byte) 1);
 
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS'Z'");
+
     private byte[] sha256hash;
     private Calendar timestamp;
     private String message;
 
-    public Gossip() {}
+    public Gossip() {
+    }
 
     public Gossip(byte[] sha256hash, Calendar timestamp, String message) {
         this.sha256hash = sha256hash;
@@ -25,11 +28,27 @@ public class Gossip extends ASNObj {
         this.message = message;
     }
 
-    public String getSha256hash() throws UnsupportedEncodingException { return new String(sha256hash, "UTF-8"); }
+    public String getSha256hash() {
+        return Base64.getEncoder().encodeToString(sha256hash);
+    }
 
-    public Calendar getTimestamp() { return timestamp; }
+    public String getTimestamp() {
+        return timestampToString(timestamp);
+    }
 
-    public String getMessage() { return message; }
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * Utility Function for Timestamp Display
+     *
+     * @param timestamp
+     * @return Formatted String
+     */
+    public static String timestampToString(Calendar timestamp) {
+        return formatter.format(timestamp.getTime());
+    }
 
     /**
      * @return Gossip Encoder
@@ -68,10 +87,7 @@ public class Gossip extends ASNObj {
      */
     @Override
     public String toString() {
-        try {
-            return String.format("GOSSIP:%s:%s:%s%%", getSha256hash(),
-                    ASN1_Util.getStringDate(timestamp), message);
-        } catch (UnsupportedEncodingException ignored) {}
-        return null;
+        return String.format("GOSSIP:%s:%s:%s%%", getSha256hash(),
+                getTimestamp(), message);
     }
 }

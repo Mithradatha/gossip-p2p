@@ -1,5 +1,8 @@
 package edu.cse4232.gossip.client;
 
+/**
+ * Factory for Creating Clients
+ */
 abstract class GossipClientFactory {
 
     /**
