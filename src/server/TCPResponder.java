@@ -7,6 +7,7 @@ import net.ddp2p.ASN1.Decoder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
@@ -27,7 +28,7 @@ public class TCPResponder extends Responder {
      * @throws IOException I/O Unavailable
      */
     public TCPResponder(Socket client, Context context) throws ContextException, IOException {
-        super(context);
+        super(client.getLocalAddress().getCanonicalHostName(), client.getLocalPort(), context);
         this.socket = client;
         socket.setSoTimeout(Server.TIME_OUT);
         this.inputStream = socket.getInputStream();
@@ -90,6 +91,8 @@ public class TCPResponder extends Responder {
                 } else {
                     System.err.println("Unknown Tag");
                 }
+
+                resetPeerTimeout();
             }
 
         } catch (SocketTimeoutException e) {

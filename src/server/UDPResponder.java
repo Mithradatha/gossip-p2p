@@ -26,7 +26,7 @@ public class UDPResponder extends Responder {
      * @throws SocketException I/O Unavailable
      */
     public UDPResponder(DatagramPacket packet, Context context) throws ContextException, SocketException {
-        super(context);
+        super(packet.getAddress().getCanonicalHostName(), packet.getPort(), context);
         this.socket = new DatagramSocket();
         this.packet = packet;
     }
@@ -78,6 +78,8 @@ public class UDPResponder extends Responder {
         } else {
             System.err.println("Unknown Tag");
         }
+
+        resetPeerTimeout();
 
         close();
     }

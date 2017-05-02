@@ -7,12 +7,16 @@ import net.ddp2p.ASN1.Decoder;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.sql.SQLException;
 
 /**
  * Base Class for UTP/TCP Responders
  */
 abstract class Responder implements Runnable, Closeable {
+
+    private String peerIP;
+    private int peerPort;
 
     private DataBaseHandler dataBaseHandler;
     private Broadcaster broadcaster;
@@ -31,19 +35,29 @@ abstract class Responder implements Runnable, Closeable {
     }
 
     /**
-     * @param context Server Assets
-     * @throws ContextException Uninitialized Object
+     * @param peerIP Connected Peer IP Address
+     * @param peerPort Connected Peer Port Number
+     * @param serverContext Server Assets
+     * @throws ContextException Uninitialized Assets
      */
-    Responder(Context context) throws ContextException {
-        this.dataBaseHandler = context.getDataBaseHandler();
-        this.broadcaster = context.getBroadcaster();
-        this.logger = context.getLogger();
+    Responder(String peerIP, int peerPort, Context serverContext) throws ContextException {
+        this.peerIP = peerIP;
+        this.peerPort = peerPort;
+
+        this.dataBaseHandler = serverContext.getDataBaseHandler();
+        this.broadcaster = serverContext.getBroadcaster();
+        this.logger = serverContext.getLogger();
     }
 
     /**
      * Depends on Socket Type of Responder
      */
     public abstract void handlePeersQuery();
+
+    /**
+     * Updates LastSeen Peer Field to Current DateTime
+     */
+    protected void resetPeerTimeout() { dataBaseHandler.updatePeerLastSeen(peerIP, peerPort); }
 
     /**
      * Decodes Gossip Messages
@@ -96,7 +110,7 @@ abstract class Responder implements Runnable, Closeable {
 
             String name = peer.getName();
             String ip = peer.getIp();
-            String port = Integer.toString(peer.getPort());
+            int port = peer.getPort();
 
             dataBaseHandler.insertPeer(name, port, ip);
 

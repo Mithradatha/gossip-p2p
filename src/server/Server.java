@@ -29,14 +29,15 @@ class Server implements Runnable {
     }
 
     /**
-     * @param args -p [port] -d [database file]
+     * @param args -p [port] -d [database file] -D [delay]
      */
     public static void main(String... args) {
 
         int serverPort = -1;
         StringBuilder dbConnectionString = new StringBuilder("jdbc:sqlite:");
+        int delay = 172800; // 2 days
 
-        GetOpt g = new GetOpt(args, "p:d:");
+        GetOpt g = new GetOpt(args, "p:d:D:");
         int ch;
 
         try {
@@ -49,6 +50,9 @@ class Server implements Runnable {
                     case 'd':
                         dbConnectionString.append(g.getOptionArg());
                         break;
+                    case 'D':
+                        delay = Integer.parseInt(g.getOptionArg());
+                        break;
                 }
             }
         } catch (GetOptsException ignored) {
@@ -58,7 +62,7 @@ class Server implements Runnable {
         try {
 
             Context ctx = new ContextBuilder()
-                    .setDataBaseHandler(new DataBaseHandler(dbConnectionString.toString()))
+                    .setDataBaseHandler(new DataBaseHandler(dbConnectionString.toString(), delay))
                     .setBroadcaster(new Broadcaster())
                     .setLogger(new Logger(LOG_PATH, APPEND, DEBUG_MODE))
                     .createContext();
