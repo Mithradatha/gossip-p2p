@@ -20,7 +20,7 @@ The server is expected to store the name and address of this peer if it is not y
 
 `PEERS?\n`
 
->Is used to query for the list of peers at this address. 
+Is used to query for the list of peers at this address. 
 The expected answer has the format: 
 `PEERS|2|John:PORT=2356:IP=163.118.239.68|Mary:PORT=2355:IP=163.118.237.60|%`
 Telling that this peer knows 2 peers, John and Mary, with the corresponding addresses given.
@@ -34,14 +34,8 @@ Windows Compilation
 Windows Execution
 ======
 
-ServerWindow>
+ServerWindow> `java -classpath ".;.\libraries\sqllite-jdbc-3.14.2.1\sqlite-jdbc-3.14.2.1.jar;.\src" Server -p 2345 -d gossip.db`
 
-`java -classpath ".;.\libraries\sqllite-jdbc-3.14.2.1\sqlite-jdbc-3.14.2.1.jar;.\src" Server -p 2345 -d gossip.db`
+TCPClientWindow> `java -classpath ".;.\src" TCPClient localhost 2345`
 
-TCPClientWindow>
-
-`java -classpath ".;.\src" TCPClient localhost 2345`
-
-UDPClientWindow>
-
-`java -classpath ".;.\src" UDPClient localhost 2345`
+UDPClientWindow> `java -classpath ".;.\src" UDPClient localhost 2345`
